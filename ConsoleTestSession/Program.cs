@@ -24,12 +24,10 @@ namespace ConsoleTestSession
                     else
                         $"start at {start_time}, end at {end_time} - User: {user} - Current session".ConsoleRed();
                 }
-
             }
             
             Console.ReadKey();
             sessions.CloseSession();
-
         }
     }
 }

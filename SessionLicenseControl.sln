@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SessionLicenseControl", "Se
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleTestSession", "ConsoleTestSession\ConsoleTestSession.csproj", "{DD3467FE-5C10-4A95-AAA4-C724CD745CF9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LicenseCreator", "LicenseCreator\LicenseCreator.csproj", "{69505E0C-140F-4A0C-9E62-9567465F3408}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{DD3467FE-5C10-4A95-AAA4-C724CD745CF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DD3467FE-5C10-4A95-AAA4-C724CD745CF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DD3467FE-5C10-4A95-AAA4-C724CD745CF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69505E0C-140F-4A0C-9E62-9567465F3408}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69505E0C-140F-4A0C-9E62-9567465F3408}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69505E0C-140F-4A0C-9E62-9567465F3408}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69505E0C-140F-4A0C-9E62-9567465F3408}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

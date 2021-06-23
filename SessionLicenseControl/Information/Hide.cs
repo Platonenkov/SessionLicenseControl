@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SessionLicenseControl.Information
 {
-    internal static class Hide
+    public static class HideInformation
     {
         /// <summary>
         /// Массив байт - "соль" алгоритма шифрования Rfc2898
