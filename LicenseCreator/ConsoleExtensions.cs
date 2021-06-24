@@ -1,7 +1,6 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
-namespace ConsoleEx
+namespace System
 {
     public static class ConsoleExtensions
     {
