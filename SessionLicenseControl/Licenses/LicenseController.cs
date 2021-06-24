@@ -3,11 +3,10 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using SessionLicenseControl.Information;
-using SessionLicenseControl.Licenses;
 
-namespace LicenseCreator
+namespace SessionLicenseControl.Licenses
 {
-    internal class LicenseController
+    public class LicenseController
     {
         public readonly string FileName;
 
