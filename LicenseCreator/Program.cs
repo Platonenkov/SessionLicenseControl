@@ -14,98 +14,113 @@ namespace LicenseCreator
             while (itFirst || GetKeyFromConsole("\nPress 'Y' to create new license, press any key to close.", ConsoleColor.Green) == ConsoleKey.Y)
             {
                 itFirst = false;
-                var license = new LicenseController(LicenseFileName);
+                var key = GetKeyFromConsole("\nPress 1 to create new license"
+                                            + "\nPress 2 to create license with session validation"
+                                            + "\nPress any key to close.", ConsoleColor.Green);
 
-                #region SET HDD
-
-                if (CheckResponce("\nEnter the HDD signature number if you want to bind the license to the disk"
-                                      + "\nIf it for this PC - Enter 'T'"
-                                      + "\nPress 'Enter' if you want skip this", "", out var hdd, ConsoleColor.Yellow))
+                var flag = false;
+                switch (key)
                 {
-                    if (hdd.ToUpper() == "T" || hdd.ToUpper() == "Т")
-                    {
-                        license.GetForThisPC();
-                        $"Your HDD Id: {license.HDDid}".ConsoleGreen();
-                    }
-                    else license.HDDid = hdd;
+                    case ConsoleKey.D1:
+                        OnlyLicense();
+                        break;
+                    case ConsoleKey.D2:
+                        LicenseAndSession();
+                        break;
+                    default: flag = true;
+                        break;
                 }
-                if (license.EnableHDD)
-                    Console.WriteLine();
-                else
-                    "HDD CHECK - DISABLED".ConsoleRed();
-                #endregion
+                if(flag)
+                    break;
+            }
+        }
 
-                #region SET DATE
+        static void OnlyLicense()
+        {
+            var license = new LicenseController();
+            #region SET HDD
 
-                while (true)
+            if (CheckResponce("\nEnter the HDD signature number if you want to bind the license to the disk"
+                                  + "\nIf it for this PC - Enter 'T'"
+                                  + "\nPress 'Enter' if you want skip this", "", out var hdd, ConsoleColor.Yellow))
+            {
+                if (hdd.ToUpper() == "T" || hdd.ToUpper() == "Т")
                 {
-                    if (CheckResponce(
-                        "Input Day count for license, or input date in formats:"
-                        + "\n'dd.MM.yyyy' | 'dd.MM.yy' | 'dd.MM.yyyy HH:mm' | 'dd.MM.yy HH:mm' if you want to bind the license to the date."
-                        + "\nPress 'Enter' if you want skip this",
-                        "", out var date, ConsoleColor.Yellow)||date=="")
-                    {
-                        if(date == "")
-                            break;
-                        if (int.TryParse(date, out var days))
-                        {
-                            license.ExpirationDate = DateTime.Now.Date.AddDays(days);
-                            break;
-                        }
-
-                        if (ToDate(date, out var date_time, new[] { "dd.MM.yyyy", "dd.MM.yyyy HH:mm", "dd.MM.yy", "dd.MM.yy HH:mm" }))
-                        {
-                            license.ExpirationDate = date_time;
-                            break;
-                        }
-
-                        "Wrong date format".ConsoleRed();
-                    }
-
+                    license.SetForThisPC();
+                    $"Your HDD Id: {license.HDDid}".ConsoleGreen();
                 }
-
-                if (license.EnableDate)
-                    Console.WriteLine();
-                else
-                    "DATA CHECK - DISABLED".ConsoleRed();
-
-                #endregion
-
-                #region SET SECRETS
-
-                if (CheckResponce(
-                    "Input secret word to cover license code, or press 'Enter' to set empty row",
-                    null, out var secret, ConsoleColor.Yellow, true))
-                    license.Secret = secret;
+                else license.HDDid = hdd;
+            }
+            if (license.EnableHDD)
                 Console.WriteLine();
+            else
+                "HDD CHECK - DISABLED".ConsoleRed();
+            #endregion
 
-                #endregion
+            #region SET DATE
 
-                Console.WriteLine(license.GetLicenseCodeRow());
-                if (license.CreateLicenseFile())
+            while (true)
+            {
+                if (CheckResponce(
+                    "Input Day count for license, or input date in formats:"
+                    + "\n'dd.MM.yyyy' | 'dd.MM.yy' | 'dd.MM.yyyy HH:mm' | 'dd.MM.yy HH:mm' if you want to bind the license to the date."
+                    + "\nPress 'Enter' if you want skip this",
+                    "", out var date, ConsoleColor.Yellow) || date == "")
                 {
-                    $"File successfuly created: {license.FileName}".ConsoleYellow();
-                }
-                switch (license.EnableDate)
-                {
-                    case true when license.EnableHDD:
-                        $"License created for HDD: {license.HDDid}, expires {license.ExpirationDate}".ConsoleRed();
+                    if (date == "")
                         break;
-                    case false when !license.EnableHDD:
-                        "UNLIMITED license was created".ConsoleRed();
+                    if (int.TryParse(date, out var days))
+                    {
+                        license.ExpirationDate = DateTime.Now.Date.AddDays(days);
                         break;
-                    case false:
-                        $"UNLIMITED license was created for PC with HDD: {license.HDDid}".ConsoleRed();
+                    }
+
+                    if (ToDate(date, out var date_time, new[] { "dd.MM.yyyy", "dd.MM.yyyy HH:mm", "dd.MM.yy", "dd.MM.yy HH:mm" }))
+                    {
+                        license.ExpirationDate = date_time;
                         break;
-                    default:
-                        $"license has been created, expires {license.ExpirationDate:dd.MM.yyyy HH:mm} for any PC".ConsoleRed();
-                        break;
+                    }
+
+                    "Wrong date format".ConsoleRed();
                 }
 
             }
 
+            if (license.EnableDate)
+                Console.WriteLine();
+            else
+                "DATA CHECK - DISABLED".ConsoleRed();
+
+            #endregion
+
+            #region SET SECRETS
+
+            if (CheckResponce(
+                "Input secret word to cover license code, or press 'Enter' to set empty row",
+                null, out var secret, ConsoleColor.Yellow, true))
+                license.Secret = secret;
+            Console.WriteLine();
+
+            #endregion
+
+            Console.WriteLine(license.GetLicenseCodeRow());
+            if (license.CreateLicenseFile(LicenseFileName))
+            {
+                $"File successful created: {LicenseFileName}".ConsoleYellow();
+            }
+
+            #region Result message
+
+            license.ToString().ConsoleRed();
+
+            #endregion
+
         }
 
+        static void LicenseAndSession()
+        {
+
+        }
         /// Extension method parsing a date string to a DateTime? <para/>
         /// <summary>
         /// </summary>

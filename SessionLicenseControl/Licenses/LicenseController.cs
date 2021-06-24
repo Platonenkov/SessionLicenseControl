@@ -1,14 +1,20 @@
 ﻿using System;
 using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using MathCore.Annotations;
+using SessionLicenseControl.Exceptions;
 using SessionLicenseControl.Information;
 
 namespace SessionLicenseControl.Licenses
 {
     public class LicenseController
     {
-        public readonly string FileName;
+        public readonly FileInfo LicenseFile;
+
+        #region For License Properties
 
         #region property EnableHDD:bool 
 
@@ -34,7 +40,7 @@ namespace SessionLicenseControl.Licenses
                 if (value != null && !sf_HDDidRegex.IsMatch(value))
                     throw new FormatException("HDD id invalid format");
                 f_HDDid = value;
-                EnableHDD = true;
+                EnableHDD = value is not null;
             }
         }
 
@@ -45,18 +51,20 @@ namespace SessionLicenseControl.Licenses
         /// <summary>Enable check by date</summary>
         public bool EnableDate { get; set; }
 
-        private DateTime _ExpirationDate;
+        private DateTime? _ExpirationDate;
 
         /// <summary>Expiration date</summary>
-        public DateTime ExpirationDate
+        public DateTime? ExpirationDate
         {
             get => _ExpirationDate;
             set
             {
                 _ExpirationDate = value;
-                EnableDate = true;
+                EnableDate = value is not null;
             }
         }
+
+        #endregion
 
         #endregion
 
@@ -65,53 +73,200 @@ namespace SessionLicenseControl.Licenses
 
         #region Constructors
 
-        public LicenseController(string fileName)
+        public LicenseController()
         {
-            FileName = fileName;
+
         }
-        public LicenseController(string fileName, string HDD, DateTime date, string secret)
+        public LicenseController(FileInfo file, string secret)
         {
-            FileName = fileName;
+            LicenseFile = file;
+            Secret = secret;
+            var lic = LoadData(LicenseFile.FullName, secret);
+            if (lic.HDD.IsNotNullOrWhiteSpace())
+                HDDid = lic.HDD;
+            if (lic.Date is { } date)
+                ExpirationDate = date.Date;
+        }
+        public LicenseController(FileInfo file, string HDD, DateTime date, string secret)
+        {
+            LicenseFile = file;
             HDDid = HDD;
             ExpirationDate = date;
             Secret = secret;
-        } 
-        public LicenseController(string fileName, DateTime date, string secret)
+        }
+        public LicenseController(FileInfo file, DateTime date, string secret)
         {
-            FileName = fileName;
+            LicenseFile = file;
             ExpirationDate = date;
             Secret = secret;
-        } 
-        public LicenseController(string fileName, string HDD, string secret)
+        }
+        public LicenseController(FileInfo file, string HDD, string secret)
         {
-            FileName = fileName;
+            LicenseFile = file;
             HDDid = HDD;
             Secret = secret;
+        }
+        public LicenseController(string secret, string HDD, DateTime date)
+        {
+            HDDid = HDD;
+            Secret = secret;
+            ExpirationDate = date;
+        }
+        public LicenseController(string secret, string HDD)
+        {
+            HDDid = HDD;
+            Secret = secret;
+        }
+        public LicenseController(string secret, DateTime date)
+        {
+            Secret = secret;
+            ExpirationDate = date;
         }
 
         #endregion
-        /// <summary> Set HDD for this PC </summary>
-        public void GetForThisPC() => HDDid = HDDInfo.GetSerialNimber("c:\\").ToString("X");
 
+        #region License
+
+        #region Overrides of Object
+
+        [NotNull] public override string ToString() => GetLicenseInformation();
+
+        #endregion
+        /// <summary>
+        /// Get string license information
+        /// </summary>
+        /// <returns></returns>
+        [NotNull]
+        public string GetLicenseInformation()
+        {
+            switch (EnableDate)
+            {
+                case true when EnableHDD:
+                    return $"License created for HDD: {HDDid}, expires {ExpirationDate}";
+                case false when !EnableHDD:
+                    return "UNLIMITED license was created";
+                case false:
+                    return $"UNLIMITED license was created for PC with HDD: {HDDid}";
+                default:
+                    return $"license has been created, expires {ExpirationDate:dd.MM.yyyy HH:mm} for any PC";
+            }
+        }
+        /// <summary> Set HDD for this PC </summary>
+        public void SetForThisPC() => HDDid = GetThisPcHDD();
+
+        internal static string GetThisPcHDD() => HDDInfo.GetSerialNimber("c:\\").ToString("X");
         /// <summary> Generate license text </summary>
         /// <returns>license code</returns>
-        public string GetLicenseCodeRow()
+        public string GetLicenseCodeRow() => GetLicense().Encrypt(Secret);
+        /// <summary> Generate license </summary>
+        /// <returns>license</returns>
+        [NotNull]
+        public License GetLicense()
         {
             var license = new License();
             if (EnableHDD)
                 license.HDD = HDDid;
             if (EnableDate)
                 license.Date = ExpirationDate;
-            return license.CreateDataRow(true, Secret);
+            return license;
         }
+
         /// <summary> Create license file </summary>
         /// <returns>true result or error</returns>
-        public bool CreateLicenseFile()
+        public bool CreateLicenseFile(string FileName) => SaveData(FileName, Secret, GetLicense());
+
+        /// <summary> Create license file </summary>
+        /// <returns>true result or error</returns>
+        public bool CreateLicenseFile() => SaveData(LicenseFile.FullName, Secret, GetLicense());
+
+        #region Save/Load
+
+        /// <summary> Load data from the file </summary>
+        public static async Task<License> LoadDataAsync(string FilePath, string secret)
         {
-            File.WriteAllText(FileName, GetLicenseCodeRow(), Encoding.UTF8);
+            try
+            {
+                var lic = new License();
+                await lic.LoadFromFileAsync(new FileInfo(FilePath), secret);
+                return lic;
+            }
+            catch (FormatException e)
+            {
+                throw new LicenseExceptions("Invalid format string", nameof(LoadData), e);
+            }
+            catch (CryptographicException e)
+            {
+                throw new LicenseExceptions("Invalid cover string", nameof(LoadData), e);
+            }
+        }
+
+        /// <summary> Load data from the file </summary>
+        public static License LoadData(string FilePath, string secret) => LoadDataAsync(FilePath, secret).Result;
+
+        /// <summary> Save data to the file </summary>
+        public static bool SaveData(string FilePath, string secret, License lic) => SaveDataAsync(FilePath, secret, lic).Result;
+        /// <summary> Save data to the file </summary>
+        public static async Task<bool> SaveDataAsync(string FilePath, string secret, License lic)
+        {
+            var data = lic.CreateDataRow(true, secret);
+
+            var file = new FileInfo(FilePath);
+            var time_out_count = 0;
+            while (file.IsLocked() && time_out_count < 100)
+            {
+                await Task.Delay(300);
+                time_out_count++;
+            }
+
+            await File.WriteAllTextAsync(FilePath, data, Encoding.UTF8);
             return true;
         }
 
-        private bool CanCreateLicense() => EnableHDD || EnableDate;
+        #endregion
+
+        #region Validate License
+
+        public bool CheckLicense(string row, string secret)
+        {
+            try
+            {
+                var license = new License(row,secret);
+                return license.ValidateLicenseForThisPC();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public bool CheckLicense() => CheckLicense(LicenseFile, Secret);
+        public static bool CheckLicense([NotNull] FileInfo FilePath, string secret)
+        {
+            try
+            {
+                var license = new License(FilePath, secret);
+                return license.ValidateLicenseForThisPC();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        public static async Task<bool> CheckLicenseAsync([NotNull] FileInfo FilePath, string secret)
+        {
+            try
+            {
+                var license = await LoadDataAsync(FilePath.FullName, secret);
+                return license.ValidateLicenseForThisPC();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+        }
+        #endregion
+        #endregion
+
     }
 }

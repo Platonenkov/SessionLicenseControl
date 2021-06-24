@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using SessionLicenseControl.Information;
-using SessionLicenseControl.Json;
-using SessionLicenseControl.Session;
 
 namespace System
 {
@@ -43,14 +35,6 @@ namespace System
             return row.StartsWith("[") && row.EndsWith("]") || row.StartsWith("{") && row.EndsWith("}") 
                 ? JsonConvert.DeserializeObject<T>(row)
                 : default;
-
-
-            //var section = json_data?.FirstOrDefault(d => d.Name == SectionName);
-            //if (section is null)
-            //    return default;
-            //var sessions = JsonConvert.DeserializeObject<T>(section);
-            //return sessions;
         }
-
     }
 }

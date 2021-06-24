@@ -12,8 +12,13 @@ namespace SessionLicenseControl.Session
 
         }
 
-        public WorkSession(DateTime date) => StartTime = date;
-        public WorkSession(DateTime date, string userName) : this(date) => UserName = userName;
+        public WorkSession(DateTime date, string information = null)
+        {
+            StartTime = date;
+            Information = information;
+        }
+
+        public WorkSession(DateTime date, string userName, string information = null) : this(date,information) => UserName = userName;
 
         /// <summary> Session start time</summary>
         public DateTime StartTime { get; set; }
@@ -21,6 +26,8 @@ namespace SessionLicenseControl.Session
         public DateTime? EndTime { get; set; }
         /// <summary> User name for current session </summary>
         public string UserName { get; set; }
+        /// <summary> Some information about session </summary>
+        public string Information { get; set; }
         /// <summary> Get session duration </summary>
         public virtual TimeSpan GetDuration() => (EndTime ?? DateTime.Now) - StartTime;
 
