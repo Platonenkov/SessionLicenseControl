@@ -10,8 +10,6 @@ namespace SessionLicenseControl.Session
         /// <summary> Count of seconds per  day </summary>
         [JsonIgnore]
         public const int DayMaxSeconds = 86400;
-        [JsonIgnore]
-        public WorkSession CurrentSession;
 
         public DaySessions()
         {
@@ -38,12 +36,6 @@ namespace SessionLicenseControl.Session
         /// <summary> Sessions count for this day </summary>
         public int GetSessionsCount() => Sessions.Count;
 
-        public void CloseCurrentSession()
-        {
-            CurrentSession.CloseSession();
-            CurrentSession = null;
-        }
-
         /// <summary>
         /// Add new session for this day
         /// </summary>
@@ -53,11 +45,13 @@ namespace SessionLicenseControl.Session
         {
             var last_session = Sessions.LastOrDefault();
             if (last_session != null && last_session.EndTime is null)
+            {
                 last_session.EndTime = date - TimeSpan.FromSeconds(1);
-
-            CurrentSession = new WorkSession(date, UserName);
-            Sessions.Add(CurrentSession);
-            return CurrentSession;
+                last_session.Information ??= "Was close when start new";
+            }
+            var new_session = new WorkSession(date, UserName);
+            Sessions.Add(new_session);
+            return new_session;
         }
     }
 

@@ -73,10 +73,6 @@ namespace SessionLicenseControl.Licenses
 
         #region Constructors
 
-        public LicenseController()
-        {
-
-        }
         public LicenseController(FileInfo file, string secret)
         {
             LicenseFile = file;
@@ -87,7 +83,7 @@ namespace SessionLicenseControl.Licenses
             if (lic.Date is { } date)
                 ExpirationDate = date.Date;
         }
-        public LicenseController(FileInfo file, string HDD, DateTime date, string secret)
+        public LicenseController(FileInfo file, string HDD, DateTime? date, string secret)
         {
             LicenseFile = file;
             HDDid = HDD;
@@ -132,6 +128,7 @@ namespace SessionLicenseControl.Licenses
         [NotNull] public override string ToString() => GetLicenseInformation();
 
         #endregion
+
         /// <summary>
         /// Get string license information
         /// </summary>
@@ -152,9 +149,7 @@ namespace SessionLicenseControl.Licenses
             }
         }
         /// <summary> Set HDD for this PC </summary>
-        public void SetForThisPC() => HDDid = GetThisPcHDD();
-
-        internal static string GetThisPcHDD() => HDDInfo.GetSerialNimber("c:\\").ToString("X");
+        public void SetForThisPC() => HDDid = License.GetThisPcHddSerialNumber();
         /// <summary> Generate license text </summary>
         /// <returns>license code</returns>
         public string GetLicenseCodeRow() => GetLicense().Encrypt(Secret);
@@ -208,7 +203,8 @@ namespace SessionLicenseControl.Licenses
         /// <summary> Save data to the file </summary>
         public static async Task<string> SaveDataAsync(string FilePath, string secret, License lic)
         {
-            var data = lic.CreateDataRow(true, secret);
+            await lic.SaveToFileAsync(FilePath, secret);
+            var data = lic.Encrypt(true, secret);
 
             var file = new FileInfo(FilePath);
             file.CreateParentIfNotExist();
@@ -227,12 +223,11 @@ namespace SessionLicenseControl.Licenses
 
         #region Validate License
 
-        public bool CheckLicense(string row, string secret)
+        public static bool CheckLicense(string row, string secret)
         {
             try
             {
-                var license = new License(row,secret);
-                return license.ValidateLicenseForThisPC();
+                return new License(row,secret).IsValid;
             }
             catch (Exception)
             {
@@ -241,12 +236,11 @@ namespace SessionLicenseControl.Licenses
         }
 
         public bool CheckLicense() => CheckLicense(LicenseFile, Secret);
-        public static bool CheckLicense([NotNull] FileInfo FilePath, string secret)
+        public static bool CheckLicense([NotNull] FileInfo file, string secret)
         {
             try
             {
-                var license = new License(FilePath, secret);
-                return license.ValidateLicenseForThisPC();
+                return new License(file, secret).IsValid;
             }
             catch (Exception)
             {
@@ -257,8 +251,7 @@ namespace SessionLicenseControl.Licenses
         {
             try
             {
-                var license = await LoadDataAsync(FilePath.FullName, secret);
-                return license.ValidateLicenseForThisPC();
+                return (await LoadDataAsync(FilePath.FullName, secret)).IsValid;
             }
             catch (Exception)
             {

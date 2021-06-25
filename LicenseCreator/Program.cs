@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.IO;
 using SessionLicenseControl.Licenses;
 
 namespace LicenseCreator
@@ -37,7 +38,8 @@ namespace LicenseCreator
 
         static void OnlyLicense()
         {
-            var license = new LicenseController();
+            string HDD_result = null;
+            DateTime? Date_result = null;
             #region SET HDD
 
             if (CheckResponce("\nEnter the HDD signature number if you want to bind the license to the disk"
@@ -46,12 +48,12 @@ namespace LicenseCreator
             {
                 if (hdd.ToUpper() == "T" || hdd.ToUpper() == "Т")
                 {
-                    license.SetForThisPC();
-                    $"Your HDD Id: {license.HDDid}".ConsoleGreen();
+                    HDD_result = License.GetThisPcHddSerialNumber();
+                    $"Your HDD Id: {HDD_result}".ConsoleGreen();
                 }
-                else license.HDDid = hdd;
+                else HDD_result = hdd;
             }
-            if (license.EnableHDD)
+            if (HDD_result is not null)
                 Console.WriteLine();
             else
                 "HDD CHECK - DISABLED".ConsoleRed();
@@ -71,13 +73,13 @@ namespace LicenseCreator
                         break;
                     if (int.TryParse(date, out var days))
                     {
-                        license.ExpirationDate = DateTime.Now.Date.AddDays(days);
+                        Date_result = DateTime.Now.Date.AddDays(days);
                         break;
                     }
 
                     if (ToDate(date, out var date_time, new[] { "dd.MM.yyyy", "dd.MM.yyyy HH:mm", "dd.MM.yy", "dd.MM.yy HH:mm" }))
                     {
-                        license.ExpirationDate = date_time;
+                        Date_result = date_time;
                         break;
                     }
 
@@ -86,7 +88,7 @@ namespace LicenseCreator
 
             }
 
-            if (license.EnableDate)
+            if (Date_result is not null)
                 Console.WriteLine();
             else
                 "DATA CHECK - DISABLED".ConsoleRed();
@@ -95,14 +97,14 @@ namespace LicenseCreator
 
             #region SET SECRETS
 
-            if (CheckResponce(
+            CheckResponce(
                 "Input secret word to cover license code, or press 'Enter' to set empty row",
-                null, out var secret, ConsoleColor.Yellow, true))
-                license.Secret = secret;
+                null, out var secret, ConsoleColor.Yellow, true);
             Console.WriteLine();
 
             #endregion
 
+            var license = new LicenseController(new FileInfo(LicenseFileName), HDD_result, Date_result, secret);
             Console.WriteLine(license.GetLicenseCodeRow());
             if (license.CreateLicenseFile(LicenseFileName) is {Length:>0} file)
             {

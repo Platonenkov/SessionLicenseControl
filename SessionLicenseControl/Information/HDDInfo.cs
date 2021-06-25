@@ -86,9 +86,9 @@ namespace SessionLicenseControl.Information
             int lngFileSystemNameSize
         );
 
-        public static uint GetSerialNimber(string drive) => new DriveInfo(drive).GetSerialNimber();
+        public static uint GetSerialNumber(string drive) => new DriveInfo(drive).GetSerialNumber();
 
-        public static uint GetSerialNimber(this DriveInfo drive)
+        public static uint GetSerialNumber(this DriveInfo drive)
         {
             const int MAX_SIZE = 0x105;
             var vol_name = new StringBuilder(MAX_SIZE);
@@ -110,7 +110,7 @@ namespace SessionLicenseControl.Information
         public static void Test()
         {
             var drive = new DriveInfo("c:\\");
-            var sn = drive.GetSerialNimber();
+            var sn = drive.GetSerialNumber();
             Console.WriteLine(sn);
         }
     }

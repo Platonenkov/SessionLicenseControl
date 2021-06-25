@@ -1,39 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using MathCore.Annotations;
 using SessionLicenseControl.Exceptions;
 
 namespace SessionLicenseControl.Session
 {
     public class SessionsOperator
     {
-        public readonly string _FilePath;
-        public WorkSession CurrentSession;
-        public SessionsOperator(string FilePath, bool NeedStartNewSeession, string UserName, bool NeedCover, string CoverRow)
+        private readonly string _FilePath;
+        public WorkSession LastSession { get; private set; }
+        public SessionsOperator(string FilePath, bool NeedStartNewSession, string UserName, string CoverRow)
         {
             _FilePath = FilePath;
-            this.NeedCover = NeedCover;
-            this.CoverRow = CoverRow;
-            LoadData();
+            LoadData(CoverRow);
 
-            if (!NeedStartNewSeession) return;
+            if (!NeedStartNewSession) return;
             StartNewSession(UserName);
-            SaveData();
+            SaveData(CoverRow);
         }
 
         public void StartNewSession(string UserName)
         {
-            if (Sessions.Count>0 && Sessions[^1] is { } day && day.Date.Date == DateTime.Now.Date)
+            if (Sessions.Count > 0 && Sessions[^1] is { } day && day.Date.Date == DateTime.Now.Date)
             {
-                CurrentSession = day.StartNewSession(DateTime.Now, UserName);
+                LastSession = day.StartNewSession(DateTime.Now, UserName);
             }
             else
             {
                 var session = new DaySessions(DateTime.Now, UserName);
-                CurrentSession = session.CurrentSession;
+                LastSession = session.Sessions.Last();
                 Sessions.Add(session);
             }
 
@@ -41,17 +42,17 @@ namespace SessionLicenseControl.Session
 
         public List<DaySessions> Sessions = new();
 
-        public bool NeedCover { get; set; }
-        public string CoverRow { get; set; }
+        /// <summary> Save sessions data to the file </summary>
+        /// <param name="CoverRow"></param>
+        public bool SaveData(string CoverRow) => SaveDataAsync(CoverRow).Result;
 
         /// <summary> Save sessions data to the file </summary>
-        public bool SaveData() => SaveDataAsync().Result;
-        /// <summary> Save sessions data to the file </summary>
-        public async Task<bool> SaveDataAsync()
+        /// <param name="CoverRow"></param>
+        public async Task<bool> SaveDataAsync([CanBeNull] string CoverRow)
         {
             try
             {
-                var data = Sessions.CreateDataRow(NeedCover, CoverRow);
+                var data = Sessions.Encrypt(CoverRow is not null, CoverRow);
 
                 var file = new FileInfo(_FilePath);
                 file.CreateParentIfNotExist();
@@ -72,9 +73,12 @@ namespace SessionLicenseControl.Session
         }
 
         /// <summary> Load sessions data from the file </summary>
-        public void LoadData() => LoadDataAsync().Wait();
+        /// <param name="CoverRow"></param>
+        public void LoadData(string CoverRow) => LoadDataAsync(CoverRow).Wait();
+
         /// <summary> Load sessions data from the file </summary>
-        public async Task LoadDataAsync()
+        /// <param name="CoverRow"></param>
+        public async Task LoadDataAsync(string CoverRow)
         {
             try
             {
@@ -94,7 +98,7 @@ namespace SessionLicenseControl.Session
                 }
 
                 var session_text = await File.ReadAllTextAsync(file_path, Encoding.UTF8);
-                var data = session_text.GetDataFromRow<List<DaySessions>>(NeedCover, CoverRow);
+                var data = session_text.Decrypt<List<DaySessions>>(CoverRow is not null, CoverRow);
                 Sessions = data ?? new List<DaySessions>();
             }
             catch (FormatException e)
@@ -110,25 +114,25 @@ namespace SessionLicenseControl.Session
         /// <summary>
         /// Close session and save data
         /// </summary>
-        public void CloseSession() => CloseSessionAsync().Wait();
+        public void CloseSession(string CoverRow) => CloseSessionAsync(CoverRow).Wait();
         /// <summary>
         /// Close session and save data
         /// </summary>
         /// <returns></returns>
-        public async Task CloseSessionAsync()
+        public async Task CloseSessionAsync(string CoverRow)
         {
             CloseLastSession();
-            await SaveDataAsync();
+            await SaveDataAsync(CoverRow);
         }
         /// <summary>
         /// Close session
         /// </summary>
         private void CloseLastSession()
         {
-            if (CurrentSession is null)
+            if (LastSession is null)
                 throw new SessionExceptions("No sessions", nameof(CloseSession));
-            CurrentSession.EndTime ??= DateTime.Now;
-
+            LastSession.EndTime ??= DateTime.Now;
+            LastSession = null;
         }
     }
 }

@@ -3,14 +3,14 @@ using SessionLicenseControl.Information;
 
 namespace System
 {
-    public static class StringExtensions
+    internal static class StringExtensions
     {
         /// <summary> Create string data with session info </summary>
         /// <param name="data">string data</param>
         /// <param name="NeedCover">Need cover data</param>
         /// <param name="CoverRow">cover row for data</param>
         /// <returns></returns>
-        public static string CreateDataRow<T>(this T data, bool NeedCover, string CoverRow)
+        public static string Encrypt<T>(this T data, bool NeedCover, string CoverRow)
         {
             var json = JsonConvert.SerializeObject(data);
             return NeedCover ? json.Cover(CoverRow) : json;
@@ -23,7 +23,7 @@ namespace System
         /// <param name="NeedDiscover">Need discover data</param>
         /// <param name="CoverRow">cover row for data</param>
         /// <returns></returns>
-        public static T GetDataFromRow<T>(this string data, bool NeedDiscover, string CoverRow)
+        public static T Decrypt<T>(this string data, bool NeedDiscover, string CoverRow)
         {
             if(!NeedDiscover)
                 return JsonConvert.DeserializeObject<T>(data);

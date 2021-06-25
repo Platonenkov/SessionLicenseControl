@@ -9,7 +9,7 @@ namespace ConsoleTestSession
     class Program
     {
         private static string SessionsFilePath => "Sessions.slc";
-        private static bool NeedCover => true;
+        public static bool CoverSessions => true;
         private static string CoverRow => "ConsoleTest";
         private static SessionsOperator Session;
         static void Main(string[] args)
@@ -20,7 +20,7 @@ namespace ConsoleTestSession
         }
         static void Test_1()
         {
-            OpenSessions();
+            OpenSessions(CoverSessions);
             GenerateTestFiles();
             foreach (var file in GenerateTestFiles())
             {
@@ -32,16 +32,15 @@ namespace ConsoleTestSession
                 Console.WriteLine(license.CheckLicense() ? "License is normal" : "License is bad");
 
             }
-            Session?.CloseSession();
+            Session?.CloseSession(CoverSessions ? CoverRow : null);
         }
 
         private static IEnumerable<string> GenerateTestFiles()
         {
             var result = new List<string>();
-            var license = new LicenseController();
-            license.Secret = CoverRow;
+            var license = new LicenseController(new FileInfo(Path.Combine(Environment.CurrentDirectory, "TestData", "1.lic")), CoverRow);
             license.SetForThisPC();
-            result.Add(license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "1.lic")));
+            result.Add(license.CreateLicenseFile());
             license.HDDid = "12312hsd";
             result.Add(license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "2.lic")));
             license.HDDid = null;
@@ -55,27 +54,27 @@ namespace ConsoleTestSession
             return result;
         }
 
-        static void OpenSessions()
+        static void OpenSessions(bool NeedCover)
         {
-            Session = new SessionsOperator(SessionsFilePath, true, "Admin", NeedCover, CoverRow);
+            Session = new SessionsOperator(SessionsFilePath, true, "Admin", NeedCover ? CoverRow : null);
             "Start session test".ConsoleGreen();
             Console.WriteLine();
 
             foreach (var session in Session.Sessions)
             {
                 $"Day: {session.Date:dd.MM.yyyy}".ConsoleYellow();
-                foreach (var (start_time, end_time, user) in session.Sessions)
+                foreach (var (start_time, end_time, user, info) in session.Sessions)
                 {
-                    if (start_time == Session.CurrentSession.StartTime)
+                    if (start_time == Session.LastSession.StartTime)
                     {
                         if (user.IsNotNullOrWhiteSpace())
                             $"start at {start_time}, {user} - Current session".ConsoleYellow();
                         else
                             $"start  at {start_time} - Current session".ConsoleYellow();
-                    }                    
+                    }
                     else
                     {
-                        if(user.IsNotNullOrWhiteSpace())
+                        if (user.IsNotNullOrWhiteSpace())
                             $"start at {start_time}, end at {end_time} - User: {user}".ConsoleRed();
                         else
                             $"start at {start_time}, end at {end_time}".ConsoleRed();
