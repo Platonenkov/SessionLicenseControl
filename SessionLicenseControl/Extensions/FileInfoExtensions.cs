@@ -25,27 +25,6 @@ namespace System.IO
             }
         }
 
-        //public static async IAsyncEnumerable<string> ReadLines(this FileInfo file)
-        //{
-        //    using (var reader = file.OpenText())
-        //        while (!reader.EndOfStream)
-        //            yield return await reader.ReadLineAsync();
-        //}
-
-        //public static Process ExecuteAsAdmin([NotNull] this FileInfo File, [NotNull] string Args = "", bool UseShellExecute = true) =>
-        //    File.Execute(Args, UseShellExecute, "runas");
-
-        //[CanBeNull]
-        //public static Process Execute([NotNull] this FileInfo File, [NotNull] string Args, bool UseShellExecute, string Verb) =>
-        //    Process.Start(new ProcessStartInfo(File.FullName, Args)
-        //    {
-        //        UseShellExecute = UseShellExecute,
-        //        Verb = Verb
-        //    });
-
-        //[NotNull]
-        //public static Process Execute([NotNull] this FileInfo File, string Args = "", bool UseShellExecute = true) => Process.Start(new ProcessStartInfo(UseShellExecute ? File.ToString() : File.FullName, Args) { UseShellExecute = UseShellExecute });
-
         [NotNull]
         public static string GetNameWithoutExtension([NotNull] this FileInfo file) => Path.GetFileNameWithoutExtension(file.Name);
 
@@ -132,39 +111,6 @@ namespace System.IO
             await writer.WriteAsync(str).ConfigureAwait(false);
         }
 
-        //public static async Task CheckFileAccessAsync([NotNull] this FileInfo File, int Timeout = 1000, int IterationCount = 100, CancellationToken Cancel = default)
-        //{
-        //    if (File is null) throw new ArgumentNullException(nameof(File));
-        //    File.ThrowIfNotFound();
-        //    for (var i = 0; i < IterationCount; i++)
-        //        try
-        //        {
-        //            Cancel.ThrowIfCancellationRequested();
-        //            using var stream = File.Open(FileMode.Open, FileAccess.Read);
-        //            if (stream.Length > 0)
-        //                return;
-        //        }
-        //        catch (IOException)
-        //        {
-        //            await Task.Delay(Timeout, Cancel).ConfigureAwait(false);
-        //        }
-        //    Cancel.ThrowIfCancellationRequested();
-        //    throw new InvalidOperationException($"Файл {File.FullName} заблокирован другим процессом");
-        //}
-
-        ///// <summary>Проверка, что файл существует</summary>
-        ///// <param name="File">Проверяемый файл</param>
-        ///// <param name="Message">Сообщение, добавляемое в исключение, если файл не найден</param>
-        ///// <returns>Файл, гарантированно существующий</returns>
-        ///// <exception cref="T:System.IO.FileNotFoundException">В случае если <paramref name="File"/> не существует.</exception>
-        //[NotNull]
-        //public static FileInfo ThrowIfNotFound([CanBeNull] this FileInfo File, [CanBeNull] string Message = null)
-        //{
-        //    var file = File.NotNull("Отсутствует ссылка на файл");
-        //    if (!file.Exists) throw new FileNotFoundException(Message ?? "Файл не найден", file.FullName);
-        //    return file;
-        //}
-
         public static FileInfo MoveTo([NotNull] this FileInfo SourceFile, [NotNull] FileInfo DestinationFile, bool Override = true)
         {
             DestinationFile.Refresh();
@@ -212,34 +158,12 @@ namespace System.IO
             return destination_file;
         }
 
+        public static void CreateParentIfNotExist([NotNull] this FileInfo file)
+        {
+            if(file.Directory is not null && !file.Directory.Exists)
+                file.Directory.Create();
+        }
         [NotNull] public static FileStream Append([NotNull] this FileInfo File) => File.Open(FileMode.Append, FileAccess.Write);
-
-        //[NotNull] public static FileInfo ChangeExtension([NotNull] this FileInfo File, string NewExtension) => new FileInfo(Path.ChangeExtension(File.ParamNotNull(nameof(File)).FullName, NewExtension));
-
-        //[NotNull]
-        //public static FileInfo Zip([NotNull] this FileInfo File, string ArchiveFileName = null, bool Override = true)
-        //{
-        //    if (File is null) throw new ArgumentNullException(nameof(File));
-        //    File.ThrowIfNotFound();
-
-        //    if (ArchiveFileName is null) ArchiveFileName = File.FullName + ".zip";
-        //    else if (!Path.IsPathRooted(ArchiveFileName))
-        //        ArchiveFileName = File.Directory.CreateFileInfo(ArchiveFileName).FullName;
-        //    using var zip_stream = IO.File.Open(ArchiveFileName, FileMode.OpenOrCreate, FileAccess.Write);
-        //    using var zip = new ZipArchive(zip_stream);
-        //    var file_entry = zip.GetEntry(File.Name);
-        //    if (file_entry != null)
-        //    {
-        //        if (!Override) return new FileInfo(ArchiveFileName);
-        //        file_entry.Delete();
-        //    }
-
-        //    using (var file_entry_stream = zip.CreateEntry(File.Name).Open())
-        //    using (var file_stream = File.OpenRead())
-        //        file_stream.CopyTo(file_entry_stream);
-
-        //    return new FileInfo(ArchiveFileName);
-        //}
 
         #region  Почучение процессов которыми занят файл
 

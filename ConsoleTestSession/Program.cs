@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using SessionLicenseControl.Licenses;
 using SessionLicenseControl.Session;
@@ -21,9 +22,9 @@ namespace ConsoleTestSession
         {
             OpenSessions();
             GenerateTestFiles();
-            for (var i = 1; i < 7; i++)
+            foreach (var file in GenerateTestFiles())
             {
-                var license = new LicenseController(new FileInfo(Path.Combine(Environment.CurrentDirectory, "TestData", $"{i}.lic")), CoverRow);
+                var license = new LicenseController(new FileInfo(file), CoverRow);
 
                 "License information:".ConsoleYellow();
                 license.ToString().ConsoleRed();
@@ -34,24 +35,24 @@ namespace ConsoleTestSession
             Session?.CloseSession();
         }
 
-        private static void GenerateTestFiles()
+        private static IEnumerable<string> GenerateTestFiles()
         {
+            var result = new List<string>();
             var license = new LicenseController();
             license.Secret = CoverRow;
             license.SetForThisPC();
-            license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "1.lic"));
+            result.Add(license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "1.lic")));
             license.HDDid = "12312hsd";
-            license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "2.lic"));
+            result.Add(license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "2.lic")));
             license.HDDid = null;
-            license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "3.lic"));
+            result.Add(license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "3.lic")));
             license.ExpirationDate = DateTime.Now.AddDays(2);
-            license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "4.lic"));
+            result.Add(license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "4.lic")));
             license.ExpirationDate = DateTime.Now.Date;
-            license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "5.lic"));
+            result.Add(license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "5.lic")));
             license.ExpirationDate = DateTime.Now - TimeSpan.FromDays(1);
-            license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "6.lic"));
-
-
+            result.Add(license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "6.lic")));
+            return result;
         }
 
         static void OpenSessions()
@@ -65,10 +66,20 @@ namespace ConsoleTestSession
                 $"Day: {session.Date:dd.MM.yyyy}".ConsoleYellow();
                 foreach (var (start_time, end_time, user) in session.Sessions)
                 {
-                    if (start_time == session.CurrentSession.StartTime)
-                        $"start at {start_time}, {user}".ConsoleYellow();
+                    if (start_time == Session.CurrentSession.StartTime)
+                    {
+                        if (user.IsNotNullOrWhiteSpace())
+                            $"start at {start_time}, {user} - Current session".ConsoleYellow();
+                        else
+                            $"start  at {start_time} - Current session".ConsoleYellow();
+                    }                    
                     else
-                        $"start at {start_time}, end at {end_time} - User: {user} - Current session".ConsoleRed();
+                    {
+                        if(user.IsNotNullOrWhiteSpace())
+                            $"start at {start_time}, end at {end_time} - User: {user}".ConsoleRed();
+                        else
+                            $"start at {start_time}, end at {end_time}".ConsoleRed();
+                    }
                 }
             }
         }

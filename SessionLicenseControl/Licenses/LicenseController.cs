@@ -142,13 +142,13 @@ namespace SessionLicenseControl.Licenses
             switch (EnableDate)
             {
                 case true when EnableHDD:
-                    return $"License created for HDD: {HDDid}, expires {ExpirationDate}";
+                    return $"License for HDD: {HDDid}, expires {ExpirationDate}";
                 case false when !EnableHDD:
-                    return "UNLIMITED license was created";
+                    return "UNLIMITED license";
                 case false:
-                    return $"UNLIMITED license was created for PC with HDD: {HDDid}";
+                    return $"UNLIMITED license for PC with HDD: {HDDid}";
                 default:
-                    return $"license has been created, expires {ExpirationDate:dd.MM.yyyy HH:mm} for any PC";
+                    return $"license expires {ExpirationDate:dd.MM.yyyy HH:mm} for any PC";
             }
         }
         /// <summary> Set HDD for this PC </summary>
@@ -173,11 +173,11 @@ namespace SessionLicenseControl.Licenses
 
         /// <summary> Create license file </summary>
         /// <returns>true result or error</returns>
-        public bool CreateLicenseFile(string FileName) => SaveData(FileName, Secret, GetLicense());
+        public string CreateLicenseFile(string FileName) => SaveData(FileName, Secret, GetLicense());
 
         /// <summary> Create license file </summary>
         /// <returns>true result or error</returns>
-        public bool CreateLicenseFile() => SaveData(LicenseFile.FullName, Secret, GetLicense());
+        public string CreateLicenseFile() => SaveData(LicenseFile.FullName, Secret, GetLicense());
 
         #region Save/Load
 
@@ -204,13 +204,14 @@ namespace SessionLicenseControl.Licenses
         public static License LoadData(string FilePath, string secret) => LoadDataAsync(FilePath, secret).Result;
 
         /// <summary> Save data to the file </summary>
-        public static bool SaveData(string FilePath, string secret, License lic) => SaveDataAsync(FilePath, secret, lic).Result;
+        public static string SaveData(string FilePath, string secret, License lic) => SaveDataAsync(FilePath, secret, lic).Result;
         /// <summary> Save data to the file </summary>
-        public static async Task<bool> SaveDataAsync(string FilePath, string secret, License lic)
+        public static async Task<string> SaveDataAsync(string FilePath, string secret, License lic)
         {
             var data = lic.CreateDataRow(true, secret);
 
             var file = new FileInfo(FilePath);
+            file.CreateParentIfNotExist();
             var time_out_count = 0;
             while (file.IsLocked() && time_out_count < 100)
             {
@@ -219,7 +220,7 @@ namespace SessionLicenseControl.Licenses
             }
 
             await File.WriteAllTextAsync(FilePath, data, Encoding.UTF8);
-            return true;
+            return FilePath;
         }
 
         #endregion

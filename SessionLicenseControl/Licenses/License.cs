@@ -85,6 +85,7 @@ namespace SessionLicenseControl.Licenses
             var data = lic.Encrypt(secret);
 
             var file = new FileInfo(FilePath);
+            file.CreateParentIfNotExist();
             var time_out_count = 0;
             while (file.IsLocked() && time_out_count < 100)
             {

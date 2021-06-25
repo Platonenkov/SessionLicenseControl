@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace SessionLicenseControl.Session
 {
     public class DaySessions
     {
         /// <summary> Count of seconds per  day </summary>
+        [JsonIgnore]
         public const int DayMaxSeconds = 86400;
+        [JsonIgnore]
         public WorkSession CurrentSession;
 
         public DaySessions()

@@ -54,6 +54,7 @@ namespace SessionLicenseControl.Session
                 var data = Sessions.CreateDataRow(NeedCover, CoverRow);
 
                 var file = new FileInfo(_FilePath);
+                file.CreateParentIfNotExist();
                 var time_out_count = 0;
                 while (file.IsLocked() && time_out_count < 100)
                 {

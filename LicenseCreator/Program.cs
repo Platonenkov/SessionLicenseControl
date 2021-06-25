@@ -104,9 +104,9 @@ namespace LicenseCreator
             #endregion
 
             Console.WriteLine(license.GetLicenseCodeRow());
-            if (license.CreateLicenseFile(LicenseFileName))
+            if (license.CreateLicenseFile(LicenseFileName) is {Length:>0} file)
             {
-                $"File successful created: {LicenseFileName}".ConsoleYellow();
+                $"File successful created: {file}".ConsoleYellow();
             }
 
             #region Result message
