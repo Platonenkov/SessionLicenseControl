@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MathCore.Annotations;
 using SessionLicenseControl.Exceptions;
@@ -21,12 +22,17 @@ namespace SessionLicenseControl.Licenses
         {
 
         }
+        public License(string hdd, DateTime? ExpirationDate)
+        {
+            HDD = hdd;
+            Date = ExpirationDate;
+        }
 
         public License(string row, string secret)
         {
             var input = Decrypt(row, secret);
-            this.Date = input.Date;
-            this.HDD = input.HDD;
+            Date = input.Date;
+            HDD = input.HDD;
         }
 
         public License(FileInfo file, string secret) => this.LoadFromFile(file, secret);

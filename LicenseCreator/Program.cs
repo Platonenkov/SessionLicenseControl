@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using SessionLicenseControl.Licenses;
+using SessionLicenseControl.Licenses;
 
 namespace LicenseCreator
 {
@@ -104,7 +105,7 @@ namespace LicenseCreator
 
             #endregion
 
-            var license = new LicenseController(new FileInfo(LicenseFileName), HDD_result, Date_result, secret);
+            var license = new LicenseGenerator(new FileInfo(LicenseFileName), HDD_result, Date_result, secret);
             Console.WriteLine(license.GetLicenseCodeRow());
             if (license.CreateLicenseFile(LicenseFileName) is {Length:>0} file)
             {

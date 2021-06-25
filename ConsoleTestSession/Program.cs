@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using SessionLicenseControl;
 using SessionLicenseControl.Licenses;
 using SessionLicenseControl.Session;
 
@@ -8,7 +9,7 @@ namespace ConsoleTestSession
 {
     class Program
     {
-        private static string SessionsFilePath => "Sessions.slc";
+        private static string SessionsFilePath => "license.lic";
         public static bool CoverSessions => true;
         private static string CoverRow => "ConsoleTest";
         private static SessionsOperator Session;
@@ -18,18 +19,27 @@ namespace ConsoleTestSession
 
             Console.ReadKey();
         }
+
+        static void Test_2()
+        {
+            void GenerateLicense()
+            {
+                var lic = new SessionLicenseController(SessionsFilePath, CoverRow, true, "admin");
+
+            }
+        }
         static void Test_1()
         {
             OpenSessions(CoverSessions);
             GenerateTestFiles();
             foreach (var file in GenerateTestFiles())
             {
-                var license = new LicenseController(new FileInfo(file), CoverRow);
+                var license = new License(new FileInfo(file), CoverRow);
 
                 "License information:".ConsoleYellow();
                 license.ToString().ConsoleRed();
 
-                Console.WriteLine(license.CheckLicense() ? "License is normal" : "License is bad");
+                Console.WriteLine(license.IsValid ? "License is normal" : "License is bad");
 
             }
             Session?.CloseSession(CoverSessions ? CoverRow : null);
@@ -38,8 +48,11 @@ namespace ConsoleTestSession
         private static IEnumerable<string> GenerateTestFiles()
         {
             var result = new List<string>();
-            var license = new LicenseController(new FileInfo(Path.Combine(Environment.CurrentDirectory, "TestData", "1.lic")), CoverRow);
-            license.SetForThisPC();
+            var license = new LicenseGenerator(new FileInfo(Path.Combine(Environment.CurrentDirectory, "TestData", "1.lic")),
+                License.GetThisPcHddSerialNumber(),
+                null,
+                CoverRow);
+
             result.Add(license.CreateLicenseFile());
             license.HDDid = "12312hsd";
             result.Add(license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "2.lic")));

@@ -13,7 +13,7 @@ using SessionLicenseControl.Session;
 namespace SessionLicenseControl
 {
 
-    public class SessionLicenseModel
+    public class SessionLicense
     {
         /// <summary>
         /// Sessions data in license
@@ -26,23 +26,23 @@ namespace SessionLicenseControl
         public License License { get; set; }
         public bool IsValid => ValidateLicenseForThisPC() && ValidateSessions();
 
-        public SessionLicenseModel()
+        public SessionLicense()
         {
 
         }
-        public SessionLicenseModel(string row, string secret)
+        public SessionLicense(string row, string secret)
         {
             var input = Decrypt(row, secret);
             Sessions = input.Sessions;
             License = input.License;
         }
 
-        public SessionLicenseModel(FileInfo file, string secret) => this.LoadFromFile(file, secret);
+        public SessionLicense(FileInfo file, string secret) => this.LoadFromFile(file, secret);
 
         #region Cryptography
 
         internal string Encrypt(string Secret) => this.Encrypt(true, Secret);
-        public static SessionLicenseModel Decrypt(string row, string Secret) => row.Decrypt<SessionLicenseModel>(true, Secret);
+        public static SessionLicense Decrypt(string row, string Secret) => row.Decrypt<SessionLicense>(true, Secret);
 
         #endregion
 
@@ -104,7 +104,7 @@ namespace SessionLicenseControl
         /// <param name="FilePath">path where file will be save</param>
         /// <param name="secret">secret row to cover license</param>
         /// <returns>path where file was saved</returns>
-        public static string SaveToFile([NotNull] this SessionLicenseModel lic, string FilePath, string secret) => lic.SaveToFileAsync(FilePath, secret).Result;
+        public static string SaveToFile([NotNull] this SessionLicense lic, string FilePath, string secret) => lic.SaveToFileAsync(FilePath, secret).Result;
 
         /// <summary>
         /// Save data to the file
@@ -113,7 +113,7 @@ namespace SessionLicenseControl
         /// <param name="FilePath">path where file will be save</param>
         /// <param name="secret">secret row to cover license</param>
         /// <returns>path where file was saved</returns>
-        public static async Task<string> SaveToFileAsync([NotNull] this SessionLicenseModel lic, [NotNull] string FilePath, string secret)
+        public static async Task<string> SaveToFileAsync([NotNull] this SessionLicense lic, [NotNull] string FilePath, string secret)
         {
             var data = lic.Encrypt(secret);
 
@@ -135,7 +135,7 @@ namespace SessionLicenseControl
         /// <param name="license">license file</param>
         /// <param name="file">file with license</param>
         /// <param name="secret">secret row for discover license</param>
-        public static void LoadFromFile([NotNull] this SessionLicenseModel license, [NotNull] FileInfo file, [NotNull] string secret)
+        public static void LoadFromFile([NotNull] this SessionLicense license, [NotNull] FileInfo file, [NotNull] string secret)
             => license.LoadFromFileAsync(file, secret).Wait();
         /// <summary>
         /// Load data from the file
@@ -143,7 +143,7 @@ namespace SessionLicenseControl
         /// <param name="license">license file</param>
         /// <param name="file">file with license</param>
         /// <param name="secret">secret row for discover license</param>
-        public static async Task LoadFromFileAsync([NotNull] this SessionLicenseModel license, [NotNull] FileInfo file, [NotNull] string secret)
+        public static async Task LoadFromFileAsync([NotNull] this SessionLicense license, [NotNull] FileInfo file, [NotNull] string secret)
         {
             try
             {
@@ -161,7 +161,7 @@ namespace SessionLicenseControl
                 }
 
                 var lic = (await File.ReadAllTextAsync(file.FullName, Encoding.UTF8))
-                   .Decrypt<SessionLicenseModel>(true, secret);
+                   .Decrypt<SessionLicense>(true, secret);
                 license.License = lic.License;
                 license.Sessions = lic.Sessions;
             }
