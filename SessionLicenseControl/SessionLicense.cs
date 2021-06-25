@@ -7,42 +7,56 @@ using System.Text;
 using System.Threading.Tasks;
 using MathCore.Annotations;
 using SessionLicenseControl.Exceptions;
+using SessionLicenseControl.Interfaces;
 using SessionLicenseControl.Licenses;
 using SessionLicenseControl.Session;
 
 namespace SessionLicenseControl
 {
-
-    public class SessionLicense
+    public class LicenseWithSessions : ILicense, ISession
     {
-        /// <summary>
-        /// Sessions data in license
-        /// </summary>
-        public List<DaySessions> Sessions { get; set; }
+        /// <summary> Sessions data in license </summary>
+        public List<DaySessions> Sessions { get; set; } = new();
+        #region Implementation of ILicense
+        /// <summary> HDD id code </summary>
+        public string HDDid { get; set; }
+        /// <summary> License expiration time </summary>
+        public DateTime? ExpirationDate { get; set; }
 
-        /// <summary>
-        /// License data
-        /// </summary>
-        public License License { get; set; }
-        public bool IsValid => ValidateLicenseForThisPC() && ValidateSessions();
+        #endregion
 
-        public SessionLicense()
+        public bool IsValid => ValidateLicense();
+
+        public LicenseWithSessions()
         {
 
         }
-        public SessionLicense(string row, string secret)
+        public LicenseWithSessions(License license)
         {
-            var input = Decrypt(row, secret);
-            Sessions = input.Sessions;
-            License = input.License;
+            ExpirationDate = license.ExpirationDate;
+            HDDid = license.HDDid;
+        }
+        public LicenseWithSessions(string hdd, DateTime? expirationDate)
+        {
+            ExpirationDate = expirationDate;
+            HDDid = hdd;
+        }
+        public LicenseWithSessions(string row, string secret)
+        {
+            var license = Decrypt(row, secret);
+            Sessions = license.Sessions;
+            ExpirationDate = license.ExpirationDate;
+            HDDid = license.HDDid;
         }
 
-        public SessionLicense(FileInfo file, string secret) => this.LoadFromFile(file, secret);
+        public LicenseWithSessions(FileInfo file, string secret) => this.LoadFromFile(file, secret);
 
         #region Cryptography
 
-        internal string Encrypt(string Secret) => this.Encrypt(true, Secret);
-        public static SessionLicense Decrypt(string row, string Secret) => row.Decrypt<SessionLicense>(true, Secret);
+        public bool ValidateLicense()=> ValidateLicenseForThisPC() && ValidateSessions();
+
+        public string Encrypt(string Secret) => this.Encrypt(true, Secret);
+        public LicenseWithSessions Decrypt(string row, string Secret) => row.Decrypt<LicenseWithSessions>(true, Secret);
 
         #endregion
 
@@ -54,7 +68,7 @@ namespace SessionLicenseControl
         /// Validate license for this pc by hdd 'C'
         /// </summary>
         /// <returns>validation result</returns>
-        private bool ValidateLicenseForThisPC() => License.ValidateLicense(this.License, License.GetThisPcHddSerialNumber());
+        private bool ValidateLicenseForThisPC() => License.ValidateLicense(new License(HDDid,ExpirationDate), License.GetThisPcHddSerialNumber());
 
         #endregion
 
@@ -71,17 +85,17 @@ namespace SessionLicenseControl
             var start_day = Sessions.First();
             if (start_day.Date > DateTime.Now)
                 return false;
-            if (License?.Date is null)
+            if (ExpirationDate is null)
                 return true;
 
-            var trial_days = (License.Date - start_day.Date).Value.Days;
+            var trial_days = (ExpirationDate - start_day.Date).Value.Days;
             if (trial_days - Sessions.Count < 0) //if the user tried to change the date
                 return false;
 
             var first_session = start_day.Sessions.First().StartTime.Date;
             if (first_session.Date != start_day.Date)
                 throw new SessionLicenseExceptions($"Invalid data in session: {first_session} in date {start_day.Date:dd.MM.yyyy}", nameof(ValidateSessions));
-            
+
             var total_days = (DateTime.Now - first_session).Days; //total timer
             if (total_days > trial_days)
                 return false;
@@ -104,7 +118,7 @@ namespace SessionLicenseControl
         /// <param name="FilePath">path where file will be save</param>
         /// <param name="secret">secret row to cover license</param>
         /// <returns>path where file was saved</returns>
-        public static string SaveToFile([NotNull] this SessionLicense lic, string FilePath, string secret) => lic.SaveToFileAsync(FilePath, secret).Result;
+        public static string SaveToFile([NotNull] this LicenseWithSessions lic, string FilePath, string secret) => lic.SaveToFileAsync(FilePath, secret).Result;
 
         /// <summary>
         /// Save data to the file
@@ -113,7 +127,7 @@ namespace SessionLicenseControl
         /// <param name="FilePath">path where file will be save</param>
         /// <param name="secret">secret row to cover license</param>
         /// <returns>path where file was saved</returns>
-        public static async Task<string> SaveToFileAsync([NotNull] this SessionLicense lic, [NotNull] string FilePath, string secret)
+        public static async Task<string> SaveToFileAsync([NotNull] this LicenseWithSessions lic, [NotNull] string FilePath, string secret)
         {
             var data = lic.Encrypt(secret);
 
@@ -132,18 +146,18 @@ namespace SessionLicenseControl
         /// <summary>
         /// Load data from the file
         /// </summary>
-        /// <param name="license">license file</param>
+        /// <param name="LicenseWithSessions">license file</param>
         /// <param name="file">file with license</param>
         /// <param name="secret">secret row for discover license</param>
-        public static void LoadFromFile([NotNull] this SessionLicense license, [NotNull] FileInfo file, [NotNull] string secret)
-            => license.LoadFromFileAsync(file, secret).Wait();
+        public static void LoadFromFile([NotNull] this LicenseWithSessions LicenseWithSessions, [NotNull] FileInfo file, [NotNull] string secret)
+            => LicenseWithSessions.LoadFromFileAsync(file, secret).Wait();
         /// <summary>
         /// Load data from the file
         /// </summary>
-        /// <param name="license">license file</param>
+        /// <param name="LicenseWithSessions">license file</param>
         /// <param name="file">file with license</param>
         /// <param name="secret">secret row for discover license</param>
-        public static async Task LoadFromFileAsync([NotNull] this SessionLicense license, [NotNull] FileInfo file, [NotNull] string secret)
+        public static async Task LoadFromFileAsync([NotNull] this LicenseWithSessions LicenseWithSessions, [NotNull] FileInfo file, [NotNull] string secret)
         {
             try
             {
@@ -161,9 +175,10 @@ namespace SessionLicenseControl
                 }
 
                 var lic = (await File.ReadAllTextAsync(file.FullName, Encoding.UTF8))
-                   .Decrypt<SessionLicense>(true, secret);
-                license.License = lic.License;
-                license.Sessions = lic.Sessions;
+                   .Decrypt<LicenseWithSessions>(true, secret);
+                LicenseWithSessions.ExpirationDate = lic.ExpirationDate;
+                LicenseWithSessions.HDDid = lic.HDDid;
+                LicenseWithSessions.Sessions = lic.Sessions;
             }
             catch (FormatException e)
             {

@@ -4,10 +4,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MathCore.Annotations;
+using SessionLicenseControl.Interfaces;
+using SessionLicenseControl.Licenses;
 
-namespace SessionLicenseControl.Licenses
+namespace SessionLicenseControl
 {
-    public class LicenseGenerator
+    public class LicenseGenerator : ILicenseBase
     {
         public readonly FileInfo LicenseFile;
 
@@ -15,7 +17,7 @@ namespace SessionLicenseControl.Licenses
 
         #region property HDDid:string
 
-        private static readonly Regex sf_HDDidRegex = new Regex(@"[0-9a-hA-h]*", RegexOptions.Compiled);
+        private static readonly Regex sf_HDDidRegex = new (@"[0-9a-hA-h]*", RegexOptions.Compiled);
 
         /// <summary>HDD id</summary>
         private string f_HDDid;
@@ -75,28 +77,42 @@ namespace SessionLicenseControl.Licenses
         public void SetForThisPC() => HDDid = License.GetThisPcHddSerialNumber();
 
         /// <summary> Generate license text </summary>
+        /// <param name="WithSessionDataControl">add session data to license control</param>
         /// <returns>license code</returns>
-        public string GetLicenseCodeRow() => GetLicense().Encrypt(Secret);
+        public string GetLicenseCoveredRow(bool WithSessionDataControl) 
+            => WithSessionDataControl
+                ? GetLicenseWithSession().Encrypt(Secret)
+                : GetLicense().Encrypt(Secret);
 
         /// <summary> Generate license </summary>
         /// <returns>license</returns>
         [NotNull]
-        public License GetLicense() => new (HDDid, ExpirationDate);
+        public License GetLicense() => new(HDDid, ExpirationDate);
+        /// <summary> Generate license </summary>
+        /// <returns>license</returns>
+        [NotNull]
+        public LicenseWithSessions GetLicenseWithSession() => new(HDDid, ExpirationDate);
 
         /// <summary> Create license file </summary>
-        /// <returns>true result or error</returns>
-        public string CreateLicenseFile(string FileName) => SaveData(FileName, Secret, GetLicense());
+        /// <param name="FullFileName">full file name to license</param>
+        /// <param name="WithSessionDataControl">add session data to license control</param>
+        /// <returns>full path to license file</returns>
+        public string CreateLicenseFile(string FullFileName, bool WithSessionDataControl) 
+            => WithSessionDataControl
+                ? SaveData(FullFileName, Secret, GetLicenseWithSession())
+                : SaveData(FullFileName, Secret, GetLicense());
 
         /// <summary> Create license file </summary>
-        /// <returns>true result or error</returns>
-        public string CreateLicenseFile() => SaveData(LicenseFile.FullName, Secret, GetLicense());
+        /// <param name="WithSessionDataControl">add session data to license control</param>
+        /// <returns>full path to license file</returns>
+        public string CreateLicenseFile(bool WithSessionDataControl) => CreateLicenseFile(LicenseFile.FullName, WithSessionDataControl);
 
-        #region Save/Load
+        #region Save
 
         /// <summary> Save data to the file </summary>
-        public static string SaveData(string FilePath, string secret, License lic) => SaveDataAsync(FilePath, secret, lic).Result;
+        public static string SaveData<T>(string FilePath, string secret, T lic) => SaveDataAsync(FilePath, secret, lic).Result;
         /// <summary> Save data to the file </summary>
-        public static async Task<string> SaveDataAsync(string FilePath, string secret, License lic)
+        public static async Task<string> SaveDataAsync<T>([NotNull] string FilePath, string secret, T lic)
         {
             var data = lic.Encrypt(true, secret);
 
@@ -118,4 +134,5 @@ namespace SessionLicenseControl.Licenses
         #endregion
 
     }
+
 }

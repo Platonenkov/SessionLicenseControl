@@ -1,22 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MathCore.Annotations;
 using SessionLicenseControl.Exceptions;
 using SessionLicenseControl.Information;
+using SessionLicenseControl.Interfaces;
 
 namespace SessionLicenseControl.Licenses
 {
-    public class License
+    public class License : ILicense
     {
-        public string HDD { get; set; }
-        public DateTime? Date { get; set; }
-        public bool IsValid => ValidateLicenseForThisPC();
+        public string HDDid { get; set; }
+        public DateTime? ExpirationDate { get; set; }
+        public bool IsValid => ValidateLicense();
 
         public License()
         {
@@ -24,23 +22,23 @@ namespace SessionLicenseControl.Licenses
         }
         public License(string hdd, DateTime? ExpirationDate)
         {
-            HDD = hdd;
-            Date = ExpirationDate;
+            HDDid = hdd;
+            this.ExpirationDate = ExpirationDate;
         }
 
         public License(string row, string secret)
         {
-            var input = Decrypt(row, secret);
-            Date = input.Date;
-            HDD = input.HDD;
+            var input = this.Decrypt(row, secret);
+            ExpirationDate = input.ExpirationDate;
+            HDDid = input.HDDid;
         }
 
         public License(FileInfo file, string secret) => this.LoadFromFile(file, secret);
 
         #region Cryptography
 
-        internal string Encrypt(string Secret) => this.Encrypt(true, Secret);
-        public static License Decrypt(string row, string Secret) => row.Decrypt<License>(true, Secret);
+        public string Encrypt(string Secret) => this.Encrypt(true, Secret);
+        public License Decrypt(string row, string Secret) => row.Decrypt<License>(true, Secret);
 
         #endregion
 
@@ -50,7 +48,7 @@ namespace SessionLicenseControl.Licenses
         /// Validate license for this pc by hdd 'C'
         /// </summary>
         /// <returns>validation result</returns>
-        private bool ValidateLicenseForThisPC() => License.ValidateLicense(this, GetThisPcHddSerialNumber());
+        public bool ValidateLicense() => License.ValidateLicense(this, GetThisPcHddSerialNumber());
 
         /// <summary>
         /// Validate license
@@ -60,12 +58,12 @@ namespace SessionLicenseControl.Licenses
         /// <returns>validation result</returns>
         public static bool ValidateLicense([NotNull] License license, string HDDid)
         {
-            if (license.HDD.IsNotNullOrWhiteSpace() && HDDid != license.HDD)
+            if (license.HDDid.IsNotNullOrWhiteSpace() && HDDid != license.HDDid)
             {
                 return false;
             }
 
-            return license.Date is null || DateTime.Now <= license.Date;
+            return license.ExpirationDate is null || DateTime.Now <= license.ExpirationDate;
         }
 
         #endregion
@@ -76,12 +74,12 @@ namespace SessionLicenseControl.Licenses
         [NotNull]
         public string GetLicenseInformation()
         {
-            return (Date is not null) switch
+            return (ExpirationDate is not null) switch
             {
-                true when HDD.IsNotNullOrWhiteSpace() => $"License for HDD: {HDD}, expires {Date:dd.MM.yyyy HH:mm}",
-                false when HDD.IsNullOrWhiteSpace() => "UNLIMITED license",
-                false => $"UNLIMITED license for PC with HDD: {HDD}",
-                _ => $"license expires {Date:dd.MM.yyyy HH:mm} for any PC"
+                true when HDDid.IsNotNullOrWhiteSpace() => $"License for HDD: {HDDid}, expires {ExpirationDate:dd.MM.yyyy HH:mm}",
+                false when HDDid.IsNullOrWhiteSpace() => "UNLIMITED license",
+                false => $"UNLIMITED license for PC with HDD: {HDDid}",
+                _ => $"license expires {ExpirationDate:dd.MM.yyyy HH:mm} for any PC"
             };
         }
         public static string GetThisPcHddSerialNumber(char hdd_char_name = 'c') => HDDInfo.GetSerialNumber($"{hdd_char_name}:\\").ToString("X");
@@ -156,8 +154,8 @@ namespace SessionLicenseControl.Licenses
 
                 var lic_text = await File.ReadAllTextAsync(file.FullName, Encoding.UTF8);
                 var lic = lic_text.Decrypt<License>(true, secret);
-                license.HDD = lic.HDD;
-                license.Date = lic.Date;
+                license.HDDid = lic.HDDid;
+                license.ExpirationDate = lic.ExpirationDate;
             }
             catch (FormatException e)
             {

@@ -22,17 +22,12 @@ namespace ConsoleTestSession
 
         static void Test_2()
         {
-            void GenerateLicense()
-            {
-                var lic = new SessionLicenseController(SessionsFilePath, CoverRow, true, "admin");
-
-            }
+            
         }
         static void Test_1()
         {
             OpenSessions(CoverSessions);
-            GenerateTestFiles();
-            foreach (var file in GenerateTestFiles())
+            foreach (var file in GenerateTestFiles(false))
             {
                 var license = new License(new FileInfo(file), CoverRow);
 
@@ -45,7 +40,7 @@ namespace ConsoleTestSession
             Session?.CloseSession(CoverSessions ? CoverRow : null);
         }
 
-        private static IEnumerable<string> GenerateTestFiles()
+        private static IEnumerable<string> GenerateTestFiles(bool WithSessionControl)
         {
             var result = new List<string>();
             var license = new LicenseGenerator(new FileInfo(Path.Combine(Environment.CurrentDirectory, "TestData", "1.lic")),
@@ -53,17 +48,17 @@ namespace ConsoleTestSession
                 null,
                 CoverRow);
 
-            result.Add(license.CreateLicenseFile());
+            result.Add(license.CreateLicenseFile(WithSessionControl));
             license.HDDid = "12312hsd";
-            result.Add(license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "2.lic")));
+            result.Add(license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "2.lic"), WithSessionControl));
             license.HDDid = null;
-            result.Add(license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "3.lic")));
+            result.Add(license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "3.lic"), WithSessionControl));
             license.ExpirationDate = DateTime.Now.AddDays(2);
-            result.Add(license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "4.lic")));
+            result.Add(license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "4.lic"), WithSessionControl));
             license.ExpirationDate = DateTime.Now.Date;
-            result.Add(license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "5.lic")));
+            result.Add(license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "5.lic"), WithSessionControl));
             license.ExpirationDate = DateTime.Now - TimeSpan.FromDays(1);
-            result.Add(license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "6.lic")));
+            result.Add(license.CreateLicenseFile(Path.Combine(Environment.CurrentDirectory, "TestData", "6.lic"), WithSessionControl));
             return result;
         }
 

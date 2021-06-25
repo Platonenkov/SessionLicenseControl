@@ -15,7 +15,7 @@ namespace SessionLicenseControl
         private readonly string _Secret;
         public bool IsValid => License is not null && License.IsValid;
         public WorkSession CurrentSession { get; private set; }
-        public SessionLicense License { get; private set; }
+        public LicenseWithSessions License { get; private set; }
 
         public SessionLicenseController()
         {
@@ -56,7 +56,7 @@ namespace SessionLicenseControl
                 }
 
                 var session_text = await File.ReadAllTextAsync(file_path, Encoding.UTF8);
-                License = session_text.Decrypt<SessionLicense>(true, Secret);
+                License = session_text.Decrypt<LicenseWithSessions>(true, Secret);
             }
             catch (FormatException e)
             {

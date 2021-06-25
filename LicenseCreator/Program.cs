@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using SessionLicenseControl;
 using SessionLicenseControl.Licenses;
 using SessionLicenseControl.Licenses;
 
@@ -24,10 +25,10 @@ namespace LicenseCreator
                 switch (key)
                 {
                     case ConsoleKey.D1:
-                        OnlyLicense();
+                        CreateLicense(false);
                         break;
                     case ConsoleKey.D2:
-                        LicenseAndSession();
+                        CreateLicense(true);
                         break;
                     default: flag = true;
                         break;
@@ -37,7 +38,7 @@ namespace LicenseCreator
             }
         }
 
-        static void OnlyLicense()
+        static void CreateLicense(bool WithSessionControl)
         {
             string HDD_result = null;
             DateTime? Date_result = null;
@@ -106,8 +107,8 @@ namespace LicenseCreator
             #endregion
 
             var license = new LicenseGenerator(new FileInfo(LicenseFileName), HDD_result, Date_result, secret);
-            Console.WriteLine(license.GetLicenseCodeRow());
-            if (license.CreateLicenseFile(LicenseFileName) is {Length:>0} file)
+            Console.WriteLine(license.GetLicenseCoveredRow(WithSessionControl));
+            if (license.CreateLicenseFile(LicenseFileName, WithSessionControl) is {Length:>0} file)
             {
                 $"File successful created: {file}".ConsoleYellow();
             }
