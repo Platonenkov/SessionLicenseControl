@@ -14,8 +14,8 @@ namespace SessionLicenseControl
         private readonly string _FilePath;
         private readonly string _Secret;
         public bool IsValid => License is not null && License.IsValid;
-        public WorkSession CurrentSession { get; private set; }
-        public LicenseWithSessions License { get; private set; }
+        public WorkSession CurrentSession { get; set; }
+        public LicenseWithSessions License { get; set; }
 
         public SessionLicenseController()
         {
@@ -56,7 +56,7 @@ namespace SessionLicenseControl
                 }
 
                 var session_text = await File.ReadAllTextAsync(file_path, Encoding.UTF8);
-                License = session_text.Decrypt<LicenseWithSessions>(true, Secret);
+                License = session_text.DecryptRow<LicenseWithSessions>(true, Secret);
             }
             catch (FormatException e)
             {
@@ -76,7 +76,7 @@ namespace SessionLicenseControl
         /// <summary> Save data to the file </summary>
         public async Task<bool> SaveDataAsync(string FilePath, string Secret)
         {
-            var data = this.Encrypt(true, Secret);
+            var data = this.EncryptToRow(true, Secret);
 
             var file = new FileInfo(FilePath);
             file.CreateParentIfNotExist();

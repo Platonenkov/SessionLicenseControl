@@ -3,7 +3,6 @@ using System.Globalization;
 using System.IO;
 using SessionLicenseControl;
 using SessionLicenseControl.Licenses;
-using SessionLicenseControl.Licenses;
 
 namespace LicenseCreator
 {

@@ -52,7 +52,7 @@ namespace SessionLicenseControl.Session
         {
             try
             {
-                var data = Sessions.Encrypt(CoverRow is not null, CoverRow);
+                var data = Sessions.EncryptToRow(CoverRow is not null, CoverRow);
 
                 var file = new FileInfo(_FilePath);
                 file.CreateParentIfNotExist();
@@ -98,7 +98,7 @@ namespace SessionLicenseControl.Session
                 }
 
                 var session_text = await File.ReadAllTextAsync(file_path, Encoding.UTF8);
-                var data = session_text.Decrypt<List<DaySessions>>(CoverRow is not null, CoverRow);
+                var data = session_text.DecryptRow<List<DaySessions>>(CoverRow is not null, CoverRow);
                 Sessions = data ?? new List<DaySessions>();
             }
             catch (FormatException e)

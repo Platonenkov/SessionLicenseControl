@@ -112,9 +112,17 @@ namespace SessionLicenseControl
         /// <summary> Save data to the file </summary>
         public static string SaveData<T>(string FilePath, string secret, T lic) => SaveDataAsync(FilePath, secret, lic).Result;
         /// <summary> Save data to the file </summary>
+        /// <exception cref="ArgumentNullException">if file path is null</exception>
+        /// <typeparam name="T">License type</typeparam>
+        /// <param name="FilePath">path to license file</param>
+        /// <param name="secret">secret row to cover data</param>
+        /// <param name="lic">license</param>
+        /// <returns></returns>
         public static async Task<string> SaveDataAsync<T>([NotNull] string FilePath, string secret, T lic)
         {
-            var data = lic.Encrypt(true, secret);
+            if (FilePath.IsNullOrWhiteSpace())
+                throw new ArgumentNullException(nameof(FilePath));
+            var data = lic.EncryptToRow(true, secret);
 
             var file = new FileInfo(FilePath);
             file.CreateParentIfNotExist();

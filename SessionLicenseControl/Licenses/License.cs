@@ -37,8 +37,8 @@ namespace SessionLicenseControl.Licenses
 
         #region Cryptography
 
-        public string Encrypt(string Secret) => this.Encrypt(true, Secret);
-        public License Decrypt(string row, string Secret) => row.Decrypt<License>(true, Secret);
+        public string Encrypt(string Secret) => this.EncryptToRow(true, Secret);
+        public License Decrypt(string row, string Secret) => row.DecryptRow<License>(true, Secret);
 
         #endregion
 
@@ -153,7 +153,7 @@ namespace SessionLicenseControl.Licenses
                 }
 
                 var lic_text = await File.ReadAllTextAsync(file.FullName, Encoding.UTF8);
-                var lic = lic_text.Decrypt<License>(true, secret);
+                var lic = lic_text.DecryptRow<License>(true, secret);
                 license.HDDid = lic.HDDid;
                 license.ExpirationDate = lic.ExpirationDate;
             }
