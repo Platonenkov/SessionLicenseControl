@@ -10,4 +10,10 @@ namespace SessionLicenseControl.Exceptions
             MethodName = method_name;
         }
     }
+    public class InvalidLicenseException:  LicenseExceptions
+    {
+        public InvalidLicenseException(string message, string method_name, Exception e = null) : base(message, method_name, e)
+        {
+        }
+    }
 }

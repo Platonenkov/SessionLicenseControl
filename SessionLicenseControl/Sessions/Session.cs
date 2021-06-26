@@ -1,20 +1,22 @@
 ﻿using System;
 
-namespace SessionLicenseControl.Session
+namespace SessionLicenseControl.Sessions
 {
     /// <summary>
     /// Session class
     /// </summary>
-    public class WorkSession
+    public class Session
     {
-        public WorkSession()
+        public const string SessionDirectory = "Sessions";
+        public const string SessionFileExtension = ".ss";
+        public Session()
         {
 
         }
 
-        public WorkSession(DateTime date)=> StartTime = date;
+        public Session(DateTime date)=> StartTime = date;
 
-        public WorkSession(DateTime date, string userName, string information = null) : this(date)
+        public Session(DateTime date, string userName, string information = null) : this(date)
         {
             Information = information;
             UserName = userName;

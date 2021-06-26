@@ -1,11 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using SessionLicenseControl.Exceptions;
-using SessionLicenseControl.Session;
+using SessionLicenseControl.Licenses;
+using SessionLicenseControl.Sessions;
 
 namespace SessionLicenseControl
 {
@@ -13,9 +12,10 @@ namespace SessionLicenseControl
     {
         private readonly string _FilePath;
         private readonly string _Secret;
-        public bool IsValid => License is not null && License.IsValid;
-        public WorkSession CurrentSession { get; set; }
-        public LicenseWithSessions License { get; set; }
+        public bool IsValid => ValidateLicense();
+        public License License { get; set; }
+        public SessionsOperator SessionController { get; private set; }
+
 
         public SessionLicenseController()
         {
@@ -27,26 +27,37 @@ namespace SessionLicenseControl
             _FilePath = FilePath;
             _Secret = Secret;
 
-            LoadData(FilePath, Secret, UserName, NeedStartNewSession);
+            LoadData(FilePath, Secret, NeedStartNewSession, UserName);
             if (!NeedStartNewSession) return;
-            StartNewSession(UserName);
             SaveData(_FilePath, _Secret);
         }
 
+        #region Validations
+
+        public bool ValidateLicense()
+        {
+            if (License?.IsValid != true)
+                return false;
+            if (!License.CheckSessions)
+                return true;
+
+            return SessionController.ValidateSessions(License.ExpirationDate);
+        }
+
+        #endregion
         #region Save/Load
 
         /// <summary> Load data from the file </summary>
-        public async Task LoadDataAsync(string FilePath, string Secret, string UserName, bool NeedStartNewSession)
+        public async Task LoadDataAsync(string FilePath, string Secret, bool NeedStartNewSession, string UserName)
         {
             try
             {
-                var file_path = FilePath;
-                if (!File.Exists(file_path))
+                if (!File.Exists(FilePath))
                     throw new FileNotFoundException(FilePath, "License file not found");
 
                 if (Secret is null)
                     throw new ArgumentNullException(nameof(Secret), "Secret row can't be null");
-                var file = new FileInfo(file_path);
+                var file = new FileInfo(FilePath);
 
                 var time_out_count = 0;
                 while (file.IsLocked() && time_out_count < 100)
@@ -55,8 +66,14 @@ namespace SessionLicenseControl
                     time_out_count++;
                 }
 
-                var session_text = await File.ReadAllTextAsync(file_path, Encoding.UTF8);
-                License = session_text.DecryptRow<LicenseWithSessions>(true, Secret);
+                var license = new License(file, Secret);
+                await license.LoadFromFileAsync(file, Secret);
+                SessionController = new SessionsOperator(FilePath, NeedStartNewSession, UserName, Secret);
+                License = license;
+            }
+            catch (AggregateException e)
+            {
+                throw new SessionLicenseExceptions("string has been tampered with", nameof(LoadData), e);
             }
             catch (FormatException e)
             {
@@ -69,44 +86,22 @@ namespace SessionLicenseControl
         }
 
         /// <summary> Load data from the file </summary>
-        public void LoadData(string FilePath, string Secret, string UserName, bool NeedStartNewSession) => LoadDataAsync(FilePath, Secret, UserName,  NeedStartNewSession).Wait();
+        public void LoadData(string FilePath, string Secret, bool NeedStartNewSession, string UserName) => LoadDataAsync(FilePath, Secret, NeedStartNewSession, UserName).Wait();
 
         /// <summary> Save data to the file </summary>
-        public bool SaveData(string FilePath, string Secret) => SaveDataAsync(FilePath,Secret).Result;
+        public bool SaveData(string FilePath, string Secret) => SaveDataAsync(FilePath, Secret).Result;
         /// <summary> Save data to the file </summary>
         public async Task<bool> SaveDataAsync(string FilePath, string Secret)
         {
-            var data = this.EncryptToRow(true, Secret);
-
-            var file = new FileInfo(FilePath);
-            file.CreateParentIfNotExist();
-            var time_out_count = 0;
-            while (file.IsLocked() && time_out_count < 100)
-            {
-                await Task.Delay(300);
-                time_out_count++;
-            }
-
-            await File.WriteAllTextAsync(FilePath, data);
+            await License.SaveToFileAsync(FilePath, Secret);
+            await SessionController.CloseSessionAsync();
             return true;
         }
 
         #endregion
 
-        public void StartNewSession(string UserName)
-        {
-            if (License.Sessions.Count > 0 && License.Sessions[^1] is { } day && day.Date.Date == DateTime.Now.Date)
-            {
-                CurrentSession = day.StartNewSession(DateTime.Now, UserName);
-            }
-            else
-            {
-                var session = new DaySessions(DateTime.Now, UserName);
-                CurrentSession = session.Sessions.Last();
-                License.Sessions.Add(session);
-            }
+        public void StartNewSession(string UserName) => SessionController.StartNewSession(UserName);
 
-        }
         /// <summary>
         /// Close session and save data
         /// </summary>
@@ -117,19 +112,7 @@ namespace SessionLicenseControl
         /// <returns></returns>
         public async Task CloseSessionAsync()
         {
-            CloseLastSession();
-            await SaveDataAsync(_FilePath,_Secret);
+            await SaveDataAsync(_FilePath, _Secret);
         }
-        /// <summary>
-        /// Close session
-        /// </summary>
-        private void CloseLastSession()
-        {
-            if (CurrentSession is null)
-                throw new SessionExceptions("No sessions", nameof(CloseSession));
-            CurrentSession.EndTime ??= DateTime.Now;
-
-        }
-
     }
 }

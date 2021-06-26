@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using SessionLicenseControl.Licenses;
-using SessionLicenseControl.Session;
+using SessionLicenseControl.Sessions;
 
 namespace SessionLicenseControl.Interfaces
 {
@@ -11,6 +11,7 @@ namespace SessionLicenseControl.Interfaces
         public string HDDid { get; set; }
         /// <summary> License expiration time </summary>
         public DateTime? ExpirationDate { get; set; }
+        public bool CheckSessions { get; set; }
 
     }
     public interface ILicense : ILicenseBase
@@ -25,18 +26,9 @@ namespace SessionLicenseControl.Interfaces
         #region Cryptography
 
         public string Encrypt(string Secret);
-        public virtual License Decrypt(string row, string Secret) => row.DecryptRow<License>(true, Secret);
+        public virtual License Decrypt(string row, string Secret) => row.DecryptRow<License>(Secret);
 
         #endregion
     }
-    public interface ISession
-    {
-        /// <summary> Session collection </summary>
-        public List<DaySessions> Sessions { get; set; }
-    }
 
-    public interface ISessionLicense : ISession, ILicense
-    {
-
-    }
 }

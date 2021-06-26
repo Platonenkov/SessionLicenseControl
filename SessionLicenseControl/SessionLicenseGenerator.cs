@@ -4,8 +4,10 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MathCore.Annotations;
+using SessionLicenseControl.Extensions;
 using SessionLicenseControl.Interfaces;
 using SessionLicenseControl.Licenses;
+using SessionLicenseControl.Sessions;
 
 namespace SessionLicenseControl
 {
@@ -17,7 +19,7 @@ namespace SessionLicenseControl
 
         #region property HDDid:string
 
-        private static readonly Regex sf_HDDidRegex = new (@"[0-9a-hA-h]*", RegexOptions.Compiled);
+        private static readonly Regex sf_HDDidRegex = new(@"[0-9a-hA-h]*", RegexOptions.Compiled);
 
         /// <summary>HDD id</summary>
         private string f_HDDid;
@@ -42,11 +44,14 @@ namespace SessionLicenseControl
 
         /// <summary>Expiration date</summary>
         public DateTime? ExpirationDate { get; set; }
-        #endregion
+
+        public bool CheckSessions { get; set; }
 
         #endregion
 
-        /// <summary> Secret row for cover license code </summary>
+        #endregion
+
+        /// <summary> secret string to encrypt data </summary>
         public string Secret { get; set; }
 
         #region Constructors
@@ -55,85 +60,72 @@ namespace SessionLicenseControl
         {
 
         }
-        public LicenseGenerator(FileInfo file, [CanBeNull] string HDD, [CanBeNull] DateTime? date, [NotNull] string secret)
+        public LicenseGenerator(FileInfo file, [CanBeNull] string HDD, [CanBeNull] DateTime? date, bool check_sessions, [NotNull] string secret)
         {
             LicenseFile = file;
             HDDid = HDD;
             ExpirationDate = date;
             Secret = secret;
+            CheckSessions = check_sessions;
         }
-        public LicenseGenerator([NotNull] string secret, [CanBeNull] string HDD, [CanBeNull] DateTime? date)
+        public LicenseGenerator([NotNull] string secret, [CanBeNull] string HDD, [CanBeNull] DateTime? date, bool check_sessions)
         {
             HDDid = HDD;
             Secret = secret;
             ExpirationDate = date;
+            CheckSessions = check_sessions;
         }
 
         #endregion
 
         #region License
 
-        /// <summary> Set HDD for this PC </summary>
-        public void SetForThisPC() => HDDid = License.GetThisPcHddSerialNumber();
-
         /// <summary> Generate license text </summary>
-        /// <param name="WithSessionDataControl">add session data to license control</param>
         /// <returns>license code</returns>
-        public string GetLicenseCoveredRow(bool WithSessionDataControl) 
-            => WithSessionDataControl
-                ? GetLicenseWithSession().Encrypt(Secret)
-                : GetLicense().Encrypt(Secret);
+        public string GetLicenseEncryptedRow() => GetLicense().Encrypt(Secret);
 
         /// <summary> Generate license </summary>
         /// <returns>license</returns>
         [NotNull]
-        public License GetLicense() => new(HDDid, ExpirationDate);
-        /// <summary> Generate license </summary>
-        /// <returns>license</returns>
-        [NotNull]
-        public LicenseWithSessions GetLicenseWithSession() => new(HDDid, ExpirationDate);
+        public License GetLicense() => new(HDDid, ExpirationDate, CheckSessions);
 
         /// <summary> Create license file </summary>
         /// <param name="FullFileName">full file name to license</param>
-        /// <param name="WithSessionDataControl">add session data to license control</param>
         /// <returns>full path to license file</returns>
-        public string CreateLicenseFile(string FullFileName, bool WithSessionDataControl) 
-            => WithSessionDataControl
-                ? SaveData(FullFileName, Secret, GetLicenseWithSession())
-                : SaveData(FullFileName, Secret, GetLicense());
+        [NotNull]
+        public string CreateLicenseFile(string FullFileName)
+            => SaveData(FullFileName, Secret, GetLicense());
 
         /// <summary> Create license file </summary>
-        /// <param name="WithSessionDataControl">add session data to license control</param>
         /// <returns>full path to license file</returns>
-        public string CreateLicenseFile(bool WithSessionDataControl) => CreateLicenseFile(LicenseFile.FullName, WithSessionDataControl);
+        [NotNull]
+        public string CreateLicenseFile() => CreateLicenseFile(LicenseFile.FullName);
 
         #region Save
 
         /// <summary> Save data to the file </summary>
-        public static string SaveData<T>(string FilePath, string secret, T lic) => SaveDataAsync(FilePath, secret, lic).Result;
+        [NotNull]
+        public static string SaveData([NotNull] string FilePath, string secret, [NotNull] License lic) => SaveDataAsync(FilePath, secret, lic).Result;
         /// <summary> Save data to the file </summary>
         /// <exception cref="ArgumentNullException">if file path is null</exception>
         /// <typeparam name="T">License type</typeparam>
         /// <param name="FilePath">path to license file</param>
-        /// <param name="secret">secret row to cover data</param>
+        /// <param name="secret">secret string if you want to encrypt data</param>
         /// <param name="lic">license</param>
         /// <returns></returns>
-        public static async Task<string> SaveDataAsync<T>([NotNull] string FilePath, string secret, T lic)
+        [ItemNotNull]
+        public static async Task<string> SaveDataAsync([NotNull] string FilePath, string secret, [NotNull] License lic)
         {
             if (FilePath.IsNullOrWhiteSpace())
                 throw new ArgumentNullException(nameof(FilePath));
-            var data = lic.EncryptToRow(true, secret);
 
-            var file = new FileInfo(FilePath);
-            file.CreateParentIfNotExist();
-            var time_out_count = 0;
-            while (file.IsLocked() && time_out_count < 100)
+            await lic.SaveToZipFileAsync(FilePath, $"{License.LicenseDirectory}\\{License.LicenseFileName}", secret);
+            if (lic.CheckSessions)
             {
-                await Task.Delay(300);
-                time_out_count++;
+                var session = new WorkDay(DateTime.Now, null) { LastSession = { Information = "License created" } };
+                session.LastSession.CloseSession();
+                await session.SaveToZipFileAsync(FilePath, SessionsOperator.GetCurrentDayFileName(), secret);
             }
-
-            await File.WriteAllTextAsync(FilePath, data, Encoding.UTF8);
             return FilePath;
         }
 

@@ -105,9 +105,10 @@ namespace LicenseCreator
 
             #endregion
 
-            var license = new LicenseGenerator(new FileInfo(LicenseFileName), HDD_result, Date_result, secret);
-            Console.WriteLine(license.GetLicenseCoveredRow(WithSessionControl));
-            if (license.CreateLicenseFile(LicenseFileName, WithSessionControl) is {Length:>0} file)
+            var license = new LicenseGenerator(new FileInfo(LicenseFileName), HDD_result, Date_result, WithSessionControl, secret);
+
+            Console.WriteLine(license.GetLicenseEncryptedRow());
+            if (license.CreateLicenseFile(LicenseFileName) is {Length:>0} file)
             {
                 $"File successful created: {file}".ConsoleYellow();
             }
@@ -135,10 +136,6 @@ namespace LicenseCreator
         /// <returns>parse result</returns>
         public static bool ToDate(string dateTimeStr, out DateTime date, params string[] dateFmt)
         {
-            // example: var dt = "2011-03-21 13:26".ToDate(new string[]{"yyyy-MM-dd HH:mm", 
-            //                                                  "M/d/yyyy h:mm:ss tt"});
-            // or simpler: 
-            // var dt = "2011-03-21 13:26".ToDate("yyyy-MM-dd HH:mm", "M/d/yyyy h:mm:ss tt");
             const DateTimeStyles style = DateTimeStyles.AllowWhiteSpaces;
             if (dateFmt == null)
             {
@@ -162,7 +159,7 @@ namespace LicenseCreator
                 if (key == ConsoleKey.Backspace && secret.Length > 0)
                 {
                     Console.Write("\b \b");
-                    secret = secret[0..^1];
+                    secret = secret[..^1];
                 }
                 else if (!char.IsControl(keyInfo.KeyChar))
                 {

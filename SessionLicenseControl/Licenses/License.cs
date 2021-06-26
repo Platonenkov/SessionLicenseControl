@@ -1,10 +1,11 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using MathCore.Annotations;
 using SessionLicenseControl.Exceptions;
+using SessionLicenseControl.Extensions;
 using SessionLicenseControl.Information;
 using SessionLicenseControl.Interfaces;
 
@@ -12,16 +13,20 @@ namespace SessionLicenseControl.Licenses
 {
     public class License : ILicense
     {
+        public const string LicenseDirectory = "License";
+        public const string LicenseFileName = "License.lic";
+
         public string HDDid { get; set; }
         public DateTime? ExpirationDate { get; set; }
         public bool IsValid => ValidateLicense();
-
+        public bool CheckSessions { get; set; }
         public License()
         {
 
         }
-        public License(string hdd, DateTime? ExpirationDate)
+        public License(string hdd, DateTime? ExpirationDate, bool check_sessions)
         {
+            CheckSessions = check_sessions;
             HDDid = hdd;
             this.ExpirationDate = ExpirationDate;
         }
@@ -29,6 +34,7 @@ namespace SessionLicenseControl.Licenses
         public License(string row, string secret)
         {
             var input = this.Decrypt(row, secret);
+            CheckSessions = input.CheckSessions;
             ExpirationDate = input.ExpirationDate;
             HDDid = input.HDDid;
         }
@@ -37,8 +43,8 @@ namespace SessionLicenseControl.Licenses
 
         #region Cryptography
 
-        public string Encrypt(string Secret) => this.EncryptToRow(true, Secret);
-        public License Decrypt(string row, string Secret) => row.DecryptRow<License>(true, Secret);
+        public string Encrypt(string Secret) => this.EncryptToRow(Secret);
+        public License Decrypt(string row, string Secret) => row.DecryptRow<License>(Secret);
 
         #endregion
 
@@ -67,6 +73,7 @@ namespace SessionLicenseControl.Licenses
         }
 
         #endregion
+
         /// <summary>
         /// Get string license information
         /// </summary>
@@ -105,22 +112,15 @@ namespace SessionLicenseControl.Licenses
         /// <param name="FilePath">path where file will be save</param>
         /// <param name="secret">secret row to cover license</param>
         /// <returns>path where file was saved</returns>
-        public static async Task<string> SaveToFileAsync([NotNull] this License lic, [NotNull] string FilePath, string secret)
-        {
-            var data = lic.Encrypt(secret);
+        public static async Task<string> SaveToFileAsync(
+            [NotNull] this License lic,
+            [NotNull] string FilePath,
+            string secret) =>
+            await lic.SaveToZipFileAsync(
+                FilePath,
+                $"{License.LicenseDirectory}\\{License.LicenseFileName}",
+                secret);
 
-            var file = new FileInfo(FilePath);
-            file.CreateParentIfNotExist();
-            var time_out_count = 0;
-            while (file.IsLocked() && time_out_count < 100)
-            {
-                await Task.Delay(300);
-                time_out_count++;
-            }
-
-            await File.WriteAllTextAsync(FilePath, data, Encoding.UTF8);
-            return FilePath;
-        }
         /// <summary>
         /// Load data from the file
         /// </summary>
@@ -145,17 +145,12 @@ namespace SessionLicenseControl.Licenses
                 if (secret is null)
                     throw new ArgumentNullException(nameof(secret), "Secret row can't be null");
 
-                var time_out_count = 0;
-                while (file.IsLocked() && time_out_count < 100)
-                {
-                    await Task.Delay(300);
-                    time_out_count++;
-                }
-
-                var lic_text = await File.ReadAllTextAsync(file.FullName, Encoding.UTF8);
-                var lic = lic_text.DecryptRow<License>(true, secret);
+                var lic = await file.GetFromZipAsync<License>(License.LicenseFileName, secret);
+                if(lic is null)
+                    throw new LicenseExceptions("License not fount", nameof(LoadFromFileAsync));
                 license.HDDid = lic.HDDid;
                 license.ExpirationDate = lic.ExpirationDate;
+                license.CheckSessions = lic.CheckSessions;
             }
             catch (FormatException e)
             {
