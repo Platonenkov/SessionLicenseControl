@@ -48,3 +48,22 @@
     }
 ```
 ![Demo](https://github.com/Platonenkov/SessionLicenseControl/blob/dev/Resources/license%20session%20sample.png)
+
+как проверить для консоли:
+```C#
+var flag = true;
+string row = null;
+while (flag)
+  try
+  {
+      var controller = row is null ? new SessionLicenseController(SessionsFilePath, Secret, true, "Admin") : new SessionLicenseController(row, Secret, SessionsFilePath, true, "Admin");
+      flag = false;
+      "License information:".ConsoleYellow();
+      controller.License.ToString().ConsoleRed();
+  }
+  catch (Exception)
+  {
+      Console.WriteLine("License is bad, Enter license code or add file");
+      row = Console.ReadLine();
+  }
+```
