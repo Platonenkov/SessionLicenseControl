@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 
 namespace SessionLicenseControl.Information
 {
-    public static class HideInformation
+    internal static class HideInformation
     {
         /// <summary>
         /// Массив байт - "соль" алгоритма шифрования Rfc2898

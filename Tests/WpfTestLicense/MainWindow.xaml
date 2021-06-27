@@ -60,7 +60,7 @@
             <GroupBox.Header>
                 <StackPanel Orientation="Horizontal">
                     <fa5:ImageAwesome Height="10" Icon="Solid_UserSecret"/>
-                    <TextBlock Text="Informational"/>
+                    <TextBlock Text="Information"/>
                 </StackPanel>
             </GroupBox.Header>
             <TextBlock Text="{Binding LicenseInfo, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"/>

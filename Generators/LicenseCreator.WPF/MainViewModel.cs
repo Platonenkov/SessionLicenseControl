@@ -5,6 +5,7 @@ using System.Windows.Input;
 using Microsoft.Win32;
 using SessionLicenseControl;
 using SessionLicenseControl.Interfaces;
+using SessionLicenseControl.WPF.Commands;
 using License = SessionLicenseControl.Licenses.License;
 
 namespace LicenseCreator.WPF
@@ -165,9 +166,9 @@ namespace LicenseCreator.WPF
         {
             var write_dialog = new SaveFileDialog
             {
-                Title = "Сохранение файла лицензии",
+                Title = "Save license file",
                 DefaultExt = ".lic",
-                Filter = "Файл лицензии (*.lic)|*.lic|Текстовые файлы (*.txt)|*.txt|Все файлы (*.*)|*.*",
+                Filter = "license (*.lic)|*.lic|text files (*.txt)|*.txt|All files (*.*)|*.*",
                 AddExtension = true,
                 OverwritePrompt = true,
                 RestoreDirectory = true,

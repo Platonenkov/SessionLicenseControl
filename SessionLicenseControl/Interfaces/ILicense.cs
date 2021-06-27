@@ -14,7 +14,7 @@ namespace SessionLicenseControl.Interfaces
         #region Cryptography
 
         public string Encrypt(string Secret);
-        public virtual License Decrypt(string row, string Secret) => row.DecryptRow<License>(Secret);
+        public License Decrypt(string row, string Secret);
 
         #endregion
     }
