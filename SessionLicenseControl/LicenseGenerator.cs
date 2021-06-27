@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MathCore.Annotations;
@@ -46,6 +45,7 @@ namespace SessionLicenseControl
         public DateTime? ExpirationDate { get; set; }
 
         public bool CheckSessions { get; set; }
+        public string IssuedFor { get; set; }
 
         #endregion
 
@@ -60,19 +60,21 @@ namespace SessionLicenseControl
         {
 
         }
-        public LicenseGenerator(FileInfo file, [CanBeNull] string HDD, [CanBeNull] DateTime? date, bool check_sessions, [NotNull] string secret)
+        public LicenseGenerator(FileInfo file, [CanBeNull] string HDD, [CanBeNull] DateTime? expirationDate, bool check_sessions,string issued_for, [NotNull] string secret)
         {
+            IssuedFor = issued_for;
             LicenseFile = file;
             HDDid = HDD;
-            ExpirationDate = date;
+            ExpirationDate = expirationDate;
             Secret = secret;
             CheckSessions = check_sessions;
         }
-        public LicenseGenerator([NotNull] string secret, [CanBeNull] string HDD, [CanBeNull] DateTime? date, bool check_sessions)
+        public LicenseGenerator([NotNull] string secret, [CanBeNull] string HDD, [CanBeNull] DateTime? expirationDate, string issued_for, bool check_sessions)
         {
+            IssuedFor = issued_for;
             HDDid = HDD;
             Secret = secret;
-            ExpirationDate = date;
+            ExpirationDate = expirationDate;
             CheckSessions = check_sessions;
         }
 
@@ -87,7 +89,7 @@ namespace SessionLicenseControl
         /// <summary> Generate license </summary>
         /// <returns>license</returns>
         [NotNull]
-        public License GetLicense() => new(HDDid, ExpirationDate, CheckSessions);
+        public License GetLicense() => new(HDDid, ExpirationDate, IssuedFor,CheckSessions );
 
         /// <summary> Create license file </summary>
         /// <param name="FullFileName">full file name to license</param>
@@ -108,7 +110,6 @@ namespace SessionLicenseControl
         public static string SaveData([NotNull] string FilePath, string secret, [NotNull] License lic) => SaveDataAsync(FilePath, secret, lic).Result;
         /// <summary> Save data to the file </summary>
         /// <exception cref="ArgumentNullException">if file path is null</exception>
-        /// <typeparam name="T">License type</typeparam>
         /// <param name="FilePath">path to license file</param>
         /// <param name="secret">secret string if you want to encrypt data</param>
         /// <param name="lic">license</param>

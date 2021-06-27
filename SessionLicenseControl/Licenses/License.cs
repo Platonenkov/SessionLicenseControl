@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
@@ -15,17 +14,21 @@ namespace SessionLicenseControl.Licenses
     {
         public const string LicenseDirectory = "License";
         public const string LicenseFileName = "License.lic";
+        public const string DefaultIssuedFor = "everybody";
 
         public string HDDid { get; set; }
         public DateTime? ExpirationDate { get; set; }
+        public string IssuedFor { get; set; }
+
         public bool IsValid => ValidateLicense();
         public bool CheckSessions { get; set; }
         public License()
         {
 
         }
-        public License(string hdd, DateTime? ExpirationDate, bool check_sessions)
+        public License(string hdd, DateTime? ExpirationDate,string issued_for, bool check_sessions)
         {
+            IssuedFor = issued_for;
             CheckSessions = check_sessions;
             HDDid = hdd;
             this.ExpirationDate = ExpirationDate;
@@ -34,6 +37,7 @@ namespace SessionLicenseControl.Licenses
         public License(string row, string secret)
         {
             var input = this.Decrypt(row, secret);
+            IssuedFor = input.IssuedFor;
             CheckSessions = input.CheckSessions;
             ExpirationDate = input.ExpirationDate;
             HDDid = input.HDDid;
@@ -83,10 +87,10 @@ namespace SessionLicenseControl.Licenses
         {
             return (ExpirationDate is not null) switch
             {
-                true when HDDid.IsNotNullOrWhiteSpace() => $"License for HDD: {HDDid}, expires {ExpirationDate:dd.MM.yyyy HH:mm}",
-                false when HDDid.IsNullOrWhiteSpace() => "UNLIMITED license",
-                false => $"UNLIMITED license for PC with HDD: {HDDid}",
-                _ => $"license expires {ExpirationDate:dd.MM.yyyy HH:mm} for any PC"
+                true when HDDid.IsNotNullOrWhiteSpace() => $"License for {IssuedFor}, HDD: {HDDid}, expires {ExpirationDate:dd.MM.yyyy HH:mm}",
+                false when HDDid.IsNullOrWhiteSpace() => $"License for {IssuedFor}, UNLIMITED license",
+                false => $"UNLIMITED license for {IssuedFor}, PC with HDD: {HDDid}",
+                _ => $"license expires {ExpirationDate:dd.MM.yyyy HH:mm} for {IssuedFor}, any PC"
             };
         }
         public static string GetThisPcHddSerialNumber(char hdd_char_name = 'c') => HDDInfo.GetSerialNumber($"{hdd_char_name}:\\").ToString("X");
@@ -142,8 +146,8 @@ namespace SessionLicenseControl.Licenses
                 if (!file.Exists)
                     throw new FileNotFoundException(file.FullName, "License file not found");
 
-                if (secret is null)
-                    throw new ArgumentNullException(nameof(secret), "Secret row can't be null");
+                //if (secret is null)
+                //    throw new ArgumentNullException(nameof(secret), "Secret row can't be null");
 
                 var lic = await file.GetFromZipAsync<License>(License.LicenseFileName, secret);
                 if(lic is null)
@@ -151,6 +155,7 @@ namespace SessionLicenseControl.Licenses
                 license.HDDid = lic.HDDid;
                 license.ExpirationDate = lic.ExpirationDate;
                 license.CheckSessions = lic.CheckSessions;
+                license.IssuedFor = lic.IssuedFor;
             }
             catch (FormatException e)
             {

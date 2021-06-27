@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using MathCore.Annotations;
 using SessionLicenseControl.Exceptions;
 using SessionLicenseControl.Licenses;
 using SessionLicenseControl.Sessions;
@@ -17,17 +19,43 @@ namespace SessionLicenseControl
         public SessionsOperator SessionController { get; private set; }
 
 
-        public SessionLicenseController()
-        {
+        public SessionLicenseController() { }
 
-        }
-
-        public SessionLicenseController(string FilePath, string Secret, bool NeedStartNewSession, string UserName)
+        public SessionLicenseController([NotNull] string FilePath, [NotNull] string Secret)
         {
             _FilePath = FilePath;
             _Secret = Secret;
+        }
 
-            LoadData(FilePath, Secret, NeedStartNewSession, UserName);
+        /// <summary>
+        /// Initialize license
+        /// </summary>
+        /// <param name="row">license encrypted row</param>
+        /// <param name="Secret">secret string to encrypt data </param>
+        /// <param name="FilePath">path where file will saved</param>
+        /// <param name="NeedStartNewSession">start new session after initialization</param>
+        /// <param name="UserName">User who start initialization</param>
+        public SessionLicenseController([NotNull] string row, [NotNull] string Secret, [NotNull] string FilePath, bool NeedStartNewSession, [CanBeNull] string UserName)
+            : this(FilePath, Secret)
+        {
+            var license = new License(row, Secret);
+            LicenseGenerator.SaveData(FilePath, Secret, license);
+            Initialize(NeedStartNewSession, UserName);
+        }
+
+        /// <summary>
+        /// Initialize license
+        /// </summary>
+        /// <param name="Secret">secret string to encrypt data </param>
+        /// <param name="FilePath">path where file will saved</param>
+        /// <param name="NeedStartNewSession">start new session after initialization</param>
+        /// <param name="UserName">User who start initialization</param>
+        public SessionLicenseController(string FilePath, [NotNull] string Secret, bool NeedStartNewSession, [CanBeNull] string UserName)
+            : this(FilePath, Secret) => Initialize(NeedStartNewSession, UserName);
+
+        void Initialize(bool NeedStartNewSession, string UserName)
+        {
+            LoadData(_FilePath, _Secret, NeedStartNewSession, UserName);
             if (!NeedStartNewSession) return;
             SaveData(_FilePath, _Secret);
         }
@@ -55,8 +83,8 @@ namespace SessionLicenseControl
                 if (!File.Exists(FilePath))
                     throw new FileNotFoundException(FilePath, "License file not found");
 
-                if (Secret is null)
-                    throw new ArgumentNullException(nameof(Secret), "Secret row can't be null");
+                //if (Secret is null)
+                //    throw new ArgumentNullException(nameof(Secret), "Secret row can't be null");
                 var file = new FileInfo(FilePath);
 
                 var time_out_count = 0;
@@ -114,5 +142,6 @@ namespace SessionLicenseControl
         {
             await SaveDataAsync(_FilePath, _Secret);
         }
+
     }
 }

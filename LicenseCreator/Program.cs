@@ -29,10 +29,11 @@ namespace LicenseCreator
                     case ConsoleKey.D2:
                         CreateLicense(true);
                         break;
-                    default: flag = true;
+                    default:
+                        flag = true;
                         break;
                 }
-                if(flag)
+                if (flag)
                     break;
             }
         }
@@ -105,10 +106,16 @@ namespace LicenseCreator
 
             #endregion
 
-            var license = new LicenseGenerator(new FileInfo(LicenseFileName), HDD_result, Date_result, WithSessionControl, secret);
+            CheckResponce(
+                $"\nEnter for whom the license will be create\nthe license will be created under the prefix \"{License.DefaultIssuedFor}\"",
+                "",
+                out var IssuedFor,
+                ConsoleColor.Yellow);
+
+            var license = new LicenseGenerator(new FileInfo(LicenseFileName), HDD_result, Date_result, WithSessionControl, IssuedFor.IsNullOrWhiteSpace() ? License.DefaultIssuedFor : IssuedFor, secret);
 
             Console.WriteLine(license.GetLicenseEncryptedRow());
-            if (license.CreateLicenseFile(LicenseFileName) is {Length:>0} file)
+            if (license.CreateLicenseFile(LicenseFileName) is { Length: > 0 } file)
             {
                 $"File successful created: {file}".ConsoleYellow();
             }

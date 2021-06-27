@@ -149,5 +149,56 @@ namespace SessionLicenseControl.Sessions
                 throw new SessionExceptions("No sessions", nameof(CloseSession));
             CurrentDay.LastSession.EndTime ??= DateTime.Now;
         }
+
+        public Dictionary<DateTime, IEnumerable<string>> GetSessionData()
+        {
+            var sessions = new Dictionary<DateTime, IEnumerable<string>>();
+            foreach (var session in Sessions)
+            {
+                var day_sessions = new List<string>();
+                foreach (var (start_time, end_time, user, info) in session.Sessions)
+                {
+                    if (start_time == CurrentDay.LastSession.StartTime)
+                    {
+                        if (user.IsNotNullOrWhiteSpace())
+                        {
+                            day_sessions.Add(
+                                info.IsNotNullOrWhiteSpace()
+                                    ? $"start at {start_time}, User: {user} - Current session, Information: {info}"
+                                    : $"start at {start_time}, User: {user} - Current session");
+                        }
+                        else
+                        {
+                            day_sessions.Add(
+                                info.IsNotNullOrWhiteSpace()
+                                    ? $"start at {start_time} - Current session, Information: {info}"
+                                    : $"start  at {start_time} - Current session");
+                        }
+                    }
+                    else
+                    {
+                        if (user.IsNotNullOrWhiteSpace())
+                        {
+                            day_sessions.Add(
+                                info.IsNotNullOrWhiteSpace()
+                                    ? $"start at {start_time}, end at {end_time}, User: {user}, Information: {info}"
+                                    : $"start at {start_time}, end at {end_time}, User: {user}");
+                        }
+                        else
+                        {
+                            day_sessions.Add(
+                                info.IsNotNullOrWhiteSpace()
+                                    ? $"start at {start_time}, end at {end_time}, Information: {info}"
+                                    : $"start at {start_time}, end at {end_time}");
+                        }
+                    }
+                }
+                sessions.Add(session.Date,day_sessions);
+            }
+
+            return sessions;
+
+        }
+
     }
 }

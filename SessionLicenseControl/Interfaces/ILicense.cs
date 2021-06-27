@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using SessionLicenseControl.Licenses;
-using SessionLicenseControl.Sessions;
 
 namespace SessionLicenseControl.Interfaces
 {
@@ -13,10 +11,10 @@ namespace SessionLicenseControl.Interfaces
         public DateTime? ExpirationDate { get; set; }
         public bool CheckSessions { get; set; }
 
+        public string IssuedFor { get; set; }
     }
     public interface ILicense : ILicenseBase
     {
-
         public bool IsValid { get; }
 
         /// <summary> Validate license </summary>
