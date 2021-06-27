@@ -22,7 +22,7 @@
 * `LicenseFilePath` - path, where license file will saved
 
 `You can use a console application "LicenseCreator" to create a license`
-
+![Demo](https://github.com/Platonenkov/SessionLicenseControl/blob/dev/Resources/license%20generator.gif)
 
 для работы с файлом лицензии:
 ```C#
@@ -34,6 +34,7 @@
 ```C#
      controller.License.ToString(); //or controller.License.GetLicenseInformation()
 ```
+![Demo](https://github.com/Platonenkov/SessionLicenseControl/blob/dev/Resources/license%20info%20sample.png)
 
 посмотреть данные о сессиях
 ```C#
@@ -46,3 +47,4 @@
         }
     }
 ```
+![Demo](https://github.com/Platonenkov/SessionLicenseControl/blob/dev/Resources/license%20session%20sample.png)
