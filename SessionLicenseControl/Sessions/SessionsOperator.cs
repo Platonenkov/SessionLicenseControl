@@ -17,16 +17,26 @@ namespace SessionLicenseControl.Sessions
 
         /// <summary> List of days with sessions </summary>
         public List<WorkDay> Sessions;
-
+        /// <summary> secret row to cover code </summary>
         private string Secret { get; }
 
         public static string GetCurrentDayFileName() => $"{Session.SessionDirectory}\\{DateTime.Now.Date:yy-MM-dd}{Session.SessionFileExtension}";
-        public SessionsOperator(string SessionArchiveFilePath, bool NeedStartNewSession, string UserName, string secret)
+        /// <summary>
+        /// Initialize new session controller
+        /// </summary>
+        /// <param name="SessionArchiveFilePath">path to archive file</param>
+        /// <param name="NeedStartNewSession">start new session when initialize</param>
+        /// <param name="UserName">user name who login now</param>
+        /// <param name="secret">secret row to cover code</param>
+        /// <param name="ThrowIfNull">throw error if session was deleted or cleared</param>
+        public SessionsOperator(string SessionArchiveFilePath, bool NeedStartNewSession, string UserName, string secret,bool ThrowIfNull)
         {
             _SessionArchiveFilePath = SessionArchiveFilePath;
             Secret = secret;
             LoadData();
             SetCurrentDay();
+            if (ThrowIfNull && Sessions is not {Count: >0})
+                throw new SessionExceptions("Sessions was cleared", nameof(Session));
 
             if (!NeedStartNewSession) return;
             StartNewSession(UserName);

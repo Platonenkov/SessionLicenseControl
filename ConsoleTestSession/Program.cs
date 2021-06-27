@@ -104,7 +104,7 @@ namespace ConsoleTestSession
 
         static SessionsOperator OpenSessions(bool NeedCover)
         {
-            var result = new SessionsOperator(SessionsFilePath, true, "Admin", NeedCover ? CoverRow : null);
+            var result = new SessionsOperator(SessionsFilePath, true, "Admin", NeedCover ? CoverRow : null, true);
             "Start session test".ConsoleGreen();
             Console.WriteLine();
 

@@ -68,7 +68,7 @@ namespace SessionLicenseControl
 
                 var license = new License(file, Secret);
                 await license.LoadFromFileAsync(file, Secret);
-                SessionController = new SessionsOperator(FilePath, NeedStartNewSession, UserName, Secret);
+                SessionController = new SessionsOperator(FilePath, NeedStartNewSession, UserName, Secret, true);
                 License = license;
             }
             catch (AggregateException e)
