@@ -114,10 +114,44 @@ namespace SessionLicenseControl
         }
 
         /// <summary> Load data from the file </summary>
-        public void LoadData(string FilePath, string Secret, bool NeedStartNewSession, string UserName) => LoadDataAsync(FilePath, Secret, NeedStartNewSession, UserName).Wait();
+        public void LoadData(string FilePath, string Secret, bool NeedStartNewSession, string UserName)
+        {
+            try
+            {
+                if (!File.Exists(FilePath))
+                    throw new FileNotFoundException(FilePath, "License file not found");
+
+                //if (Secret is null)
+                //    throw new ArgumentNullException(nameof(Secret), "Secret row can't be null");
+                var file = new FileInfo(FilePath);
+
+                var license = new License(file, Secret);
+                license.LoadFromFile(file, Secret);
+                SessionController = new SessionsOperator(FilePath, NeedStartNewSession, UserName, Secret, license.CheckSessions);
+                License = license;
+            }
+            catch (AggregateException e)
+            {
+                throw new SessionLicenseExceptions("string has been tampered with", nameof(LoadData), e);
+            }
+            catch (FormatException e)
+            {
+                throw new SessionLicenseExceptions("Invalid format string", nameof(LoadData), e);
+            }
+            catch (CryptographicException e)
+            {
+                throw new SessionLicenseExceptions("Invalid cover string", nameof(LoadData), e);
+            }
+
+        }
 
         /// <summary> Save data to the file </summary>
-        public bool SaveData(string FilePath, string Secret) => SaveDataAsync(FilePath, Secret).Result;
+        public bool SaveData(string FilePath, string Secret)
+        {
+            License.SaveToFile(FilePath, Secret);
+            SessionController.CloseSession();
+            return true;
+        }
         /// <summary> Save data to the file </summary>
         public async Task<bool> SaveDataAsync(string FilePath, string Secret)
         {
@@ -133,7 +167,10 @@ namespace SessionLicenseControl
         /// <summary>
         /// Close session and save data
         /// </summary>
-        public void CloseSession() => CloseSessionAsync().Wait();
+        public void CloseSession()
+        {
+            SaveData(_FilePath, _Secret);
+        }
         /// <summary>
         /// Close session and save data
         /// </summary>

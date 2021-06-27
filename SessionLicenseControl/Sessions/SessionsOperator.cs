@@ -95,13 +95,35 @@ namespace SessionLicenseControl.Sessions
         }
 
         /// <summary> Save sessions data to the file </summary>
-        private void SaveData() => SaveDataAsync().Wait();
+        private void SaveData() => CurrentDay.SaveToZipFile(_SessionArchiveFilePath, GetCurrentDayFileName(), Secret);
 
         /// <summary> Save sessions data to the file </summary>
         private async Task SaveDataAsync() => await CurrentDay.SaveToZipFileAsync(_SessionArchiveFilePath, GetCurrentDayFileName(), Secret);
 
         /// <summary> Load sessions data from the file </summary>
-        private void LoadData() => LoadDataAsync().Wait();
+        private void LoadData()
+        {
+            try
+            {
+                var file = new FileInfo(_SessionArchiveFilePath);
+                if (!file.Exists)
+                {
+                    Sessions = new List<WorkDay>();
+                    return;
+                }
+
+                Sessions = file.GetAllFromZip<WorkDay>(Session.SessionFileExtension, Secret);
+            }
+            catch (FormatException e)
+            {
+                throw new SessionExceptions("Invalid session string", nameof(LoadData), e);
+            }
+            catch (CryptographicException e)
+            {
+                throw new SessionExceptions("Invalid cover string", nameof(LoadData), e);
+            }
+
+        }
 
         /// <summary> Load sessions data from the file </summary>
         private async Task LoadDataAsync()
@@ -130,7 +152,11 @@ namespace SessionLicenseControl.Sessions
         /// <summary>
         /// Close session and save data
         /// </summary>
-        public void CloseSession() => CloseSessionAsync().Wait();
+        public void CloseSession()
+        {
+            CloseLastSession();
+             SaveData();
+        }
         /// <summary>
         /// Close session and save data
         /// </summary>

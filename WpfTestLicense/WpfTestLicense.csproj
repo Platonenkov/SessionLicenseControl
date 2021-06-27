@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SessionLicenseControl.WPF\SessionLicenseControl.WPF.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FontAwesome5" Version="2.1.2" />
+  </ItemGroup>
+
+</Project>

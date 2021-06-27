@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MathCore.Annotations;
 using SessionLicenseControl.Extensions;
@@ -18,8 +17,6 @@ namespace SessionLicenseControl
 
         #region property HDDid:string
 
-        private static readonly Regex sf_HDDidRegex = new(@"[0-9a-hA-h]*", RegexOptions.Compiled);
-
         /// <summary>HDD id</summary>
         private string f_HDDid;
 
@@ -30,7 +27,7 @@ namespace SessionLicenseControl
             set
             {
                 if (Equals(f_HDDid, value)) return;
-                if (value != null && !sf_HDDidRegex.IsMatch(value))
+                if (value != null && !License.HDDidRegex.IsMatch(value))
                     throw new FormatException("HDD id invalid format");
                 f_HDDid = value;
             }
@@ -107,7 +104,22 @@ namespace SessionLicenseControl
 
         /// <summary> Save data to the file </summary>
         [NotNull]
-        public static string SaveData([NotNull] string FilePath, string secret, [NotNull] License lic) => SaveDataAsync(FilePath, secret, lic).Result;
+        public static string SaveData([NotNull] string FilePath, string secret, [NotNull] License lic)
+        {
+            if (FilePath.IsNullOrWhiteSpace())
+                throw new ArgumentNullException(nameof(FilePath));
+            if (File.Exists(FilePath))
+                File.Delete(FilePath);
+
+            lic.SaveToZipFile(FilePath, $"{License.LicenseDirectory}\\{License.LicenseFileName}", secret);
+            if (!lic.CheckSessions) return FilePath;
+
+            var session = new WorkDay(DateTime.Now, null) { LastSession = { Information = "License created" } };
+            session.LastSession.CloseSession();
+            session.SaveToZipFile(FilePath, SessionsOperator.GetCurrentDayFileName(), secret);
+            return FilePath;
+
+        }
         /// <summary> Save data to the file </summary>
         /// <exception cref="ArgumentNullException">if file path is null</exception>
         /// <param name="FilePath">path to license file</param>
@@ -119,14 +131,15 @@ namespace SessionLicenseControl
         {
             if (FilePath.IsNullOrWhiteSpace())
                 throw new ArgumentNullException(nameof(FilePath));
+            if(File.Exists(FilePath))
+                File.Delete(FilePath);
 
             await lic.SaveToZipFileAsync(FilePath, $"{License.LicenseDirectory}\\{License.LicenseFileName}", secret);
-            if (lic.CheckSessions)
-            {
-                var session = new WorkDay(DateTime.Now, null) { LastSession = { Information = "License created" } };
-                session.LastSession.CloseSession();
-                await session.SaveToZipFileAsync(FilePath, SessionsOperator.GetCurrentDayFileName(), secret);
-            }
+            if (!lic.CheckSessions) return FilePath;
+
+            var session = new WorkDay(DateTime.Now, null) { LastSession = { Information = "License created" } };
+            session.LastSession.CloseSession();
+            await session.SaveToZipFileAsync(FilePath, SessionsOperator.GetCurrentDayFileName(), secret);
             return FilePath;
         }
 

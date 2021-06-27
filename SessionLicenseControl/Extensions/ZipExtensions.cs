@@ -21,7 +21,12 @@ namespace SessionLicenseControl.Extensions
         /// <returns>path where file was saved</returns>
         [NotNull]
         public static string SaveToZipFile<T>([NotNull] this T data, [NotNull] string FilePath, string EntryFileName, string secret)
-            => data.SaveToZipFileAsync(FilePath, secret, EntryFileName).Result;
+        {
+            var file = new FileInfo(FilePath);
+            var row = data.EncryptToRow(secret);
+            file.AddToZip(EntryFileName, row);
+            return FilePath;
+        }
 
         /// <summary>
         /// Save data to the file
@@ -40,7 +45,26 @@ namespace SessionLicenseControl.Extensions
             return FilePath;
         }
 
-        public static void AddToZip(this FileInfo ArchiveFile, string EntryFileName, string data) => ArchiveFile.AddToZipAsync(EntryFileName, data).Wait();
+        public static void AddToZip(this FileInfo ArchiveFile, string EntryFileName, string data)
+        {
+            var time_out_count = 0;
+            while (ArchiveFile.IsLocked() && time_out_count < 100)
+            {
+                Task.Delay(300);
+                time_out_count++;
+            }
+
+            using var zip_stream = ArchiveFile.Open(FileMode.OpenOrCreate);
+            using var archive = new ZipArchive(zip_stream, ZipArchiveMode.Update);
+            var file = archive.Entries.FirstOrDefault(e => e.FullName == EntryFileName);
+            file?.Delete();
+
+            file = archive.CreateEntry(EntryFileName, CompressionLevel.Optimal);
+
+            using StreamWriter writer = new StreamWriter(file.Open(), Encoding.UTF8);
+
+            writer.Write(data);
+        }
         public static async Task AddToZipAsync(this FileInfo ArchiveFile, string EntryFileName, string data)
         {
             var time_out_count = 0;
@@ -70,8 +94,31 @@ namespace SessionLicenseControl.Extensions
         /// <param name="Secret">secret string if there was</param>
         /// <returns></returns>
         [ItemNotNull]
-        public static List<T> GetAllFromZip<T>(this FileInfo ArchiveFile, string FileExtension, string Secret) =>
-            ArchiveFile.GetAllFromZipAsync<T>(FileExtension, Secret).Result;
+        public static List<T> GetAllFromZip<T>(this FileInfo ArchiveFile, string FileExtension, string Secret)
+        {
+            var sessions = new List<T>();
+
+            // open zip
+            using var zip_stream = ArchiveFile.OpenRead();
+
+            using var archive = new ZipArchive(zip_stream, ZipArchiveMode.Read);
+
+            // iterate through zipped objects
+            foreach (var archive_entry in archive.Entries.Where(e => e.Name.EndsWith(FileExtension)))
+            {
+                if (!archive_entry.Name.EndsWith(FileExtension))
+                {
+                    continue;
+                }
+
+                var data = archive_entry.Open().ReadToEndAsString();
+                var day = data.DecryptRow<T>(Secret);
+                sessions.Add(day);
+            }
+
+            return sessions;
+        }
+
         /// <summary>
         /// Get a lot of data from archive
         /// </summary>
@@ -114,8 +161,18 @@ namespace SessionLicenseControl.Extensions
         /// <param name="Secret">secret string if there was</param>
         /// <returns></returns>
         [NotNull]
-        public static T GetFromZip<T>(this FileInfo ArchiveFile, string EntryName, string Secret) =>
-            ArchiveFile.GetFromZipAsync<T>(EntryName, Secret).Result;
+        public static T GetFromZip<T>(this FileInfo ArchiveFile, string EntryName, string Secret)
+        {
+            // open zip
+            using var zip_stream = ArchiveFile.OpenRead();
+
+            using var archive = new ZipArchive(zip_stream, ZipArchiveMode.Read);
+            var file = archive.Entries.FirstOrDefault(e => e.Name == EntryName);
+            if (file is null) return default!;
+
+            var data = file.Open().ReadToEndAsString();
+            return data.DecryptRow<T>(Secret);
+        }
         /// <summary>
         /// Get a data from archive
         /// </summary>

@@ -1,0 +1,69 @@
+﻿<Window x:Class="WpfTestLicense.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfTestLicense"
+        xmlns:styles="clr-namespace:SessionLicenseControl.WPF.Styles;assembly=SessionLicenseControl.WPF"
+        xmlns:fa5="http://schemas.fontawesome.com/icons/"
+        mc:Ignorable="d"
+        Title="{Binding DataContext.LicenseInfo, Mode=OneWay,UpdateSourceTrigger=PropertyChanged, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Height="450" Width="800">
+    <Window.DataContext>
+        <local:MainViewModel/>
+    </Window.DataContext>
+    <Grid Margin="3">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="47"/>
+        </Grid.RowDefinitions>
+        <GroupBox Grid.Column="0" Grid.Row="0"  IsEnabled="False">
+            <GroupBox.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <fa5:ImageAwesome Height="10" Icon="Solid_Hdd"/>
+                        <TextBlock Text=" HDD id"/>
+                    </StackPanel>
+            </GroupBox.Header>
+            <TextBlock Text="{Binding HDDid, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"/>
+        </GroupBox>
+        <GroupBox Grid.Column="1" Grid.Row="0" IsEnabled="False">
+            <GroupBox.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <fa5:ImageAwesome Height="10" Icon="Solid_Clock"/>
+                        <TextBlock Text=" Time"/>
+                    </StackPanel>
+            </GroupBox.Header>
+            <DatePicker SelectedDate="{Binding ExpirationDate, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"/>
+        </GroupBox>
+        <CheckBox  Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" IsChecked="{Binding CheckSessions, Mode=OneWay}"  IsEnabled="False">
+            <StackPanel Orientation="Horizontal">
+                <fa5:ImageAwesome Height="10" Icon="Solid_Calendar"/>
+                <TextBlock Text=" Sessions"/>
+            </StackPanel>
+        </CheckBox>
+        <GroupBox Grid.Column="1" Grid.Row="1"  IsEnabled="False">
+            <GroupBox.Header>
+                <StackPanel Orientation="Horizontal">
+                    <fa5:ImageAwesome Height="10" Icon="Solid_User"/>
+                    <TextBlock Text=" License owner"/>
+                </StackPanel>
+            </GroupBox.Header>
+            <TextBlock Text="{Binding IssuedFor, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"/>
+        </GroupBox>
+        <GroupBox Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2">
+            <GroupBox.Header>
+                <StackPanel Orientation="Horizontal">
+                    <fa5:ImageAwesome Height="10" Icon="Solid_UserSecret"/>
+                    <TextBlock Text="Informational"/>
+                </StackPanel>
+            </GroupBox.Header>
+            <TextBlock Text="{Binding LicenseInfo, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"/>
+        </GroupBox>
+    </Grid>
+</Window>

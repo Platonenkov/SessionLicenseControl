@@ -19,34 +19,47 @@ namespace ConsoleTestSession
 
         static void Test()
         {
-            if (!File.Exists(SessionsFilePath))
-            {
-                var lic = new LicenseGenerator(Secret, License.GetThisPcHddSerialNumber(), DateTime.Now.AddDays(10), License.DefaultIssuedFor, true);
-                lic.CreateLicenseFile(SessionsFilePath);
-            }
-
-            var controller = new SessionLicenseController(SessionsFilePath, Secret, true, "Admin");
-            "License information:".ConsoleYellow();
-            controller.License.ToString().ConsoleRed();
-
-            if (!controller.License.IsValid)
-            {
-                throw new InvalidLicenseException("License NOT VALID", nameof(License.ValidateLicense));
-            }
-
-            foreach (var (date_time, sessions) in controller.SessionController.GetSessionData())
-            {
-                $"Day: {date_time:dd.MM.yyyy}".ConsoleYellow();
-                foreach (var session in sessions)
+            //TODO UNCOMMENT THIS TO CREATE TEST LICENSE FILE
+            //if (!File.Exists(SessionsFilePath))
+            //{
+            //    var lic = new LicenseGenerator(Secret, License.GetThisPcHddSerialNumber(), DateTime.Now.AddDays(10), License.DefaultIssuedFor, true);
+            //    lic.CreateLicenseFile(SessionsFilePath);
+            //}
+            var flag = true;
+            string row = null;
+            while (flag)
+                try
                 {
-                    session.ConsoleRed();
+                    var controller = row is null ? new SessionLicenseController(SessionsFilePath, Secret, true, "Admin") : new SessionLicenseController(row, Secret, SessionsFilePath, true, "Admin");
+                    flag = false;
+                    "License information:".ConsoleYellow();
+                    controller.License.ToString().ConsoleRed();
+
+                    if (!controller.License.IsValid)
+                    {
+                        throw new InvalidLicenseException("License NOT VALID", nameof(License.ValidateLicense));
+                    }
+
+                    foreach (var (date_time, sessions) in controller.SessionController.GetSessionData())
+                    {
+                        $"Day: {date_time:dd.MM.yyyy}".ConsoleYellow();
+                        foreach (var session in sessions)
+                        {
+                            session.ConsoleRed();
+                        }
+                    }
+
+                    Console.WriteLine(controller.IsValid ? "License is normal" : "License is bad");
+
+
+                    controller.CloseSession();
                 }
-            }
+                catch (Exception)
+                {
+                    Console.WriteLine("License is bad, Enter license code or add file");
+                    row = Console.ReadLine();
+                }
 
-            Console.WriteLine(controller.IsValid ? "License is normal" : "License is bad");
-
-
-            controller.CloseSession();
         }
         private static void CheckTestFiles(string filePath)
         {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MathCore.Annotations;
 using SessionLicenseControl.Exceptions;
@@ -96,6 +97,8 @@ namespace SessionLicenseControl.Licenses
         public static string GetThisPcHddSerialNumber(char hdd_char_name = 'c') => HDDInfo.GetSerialNumber($"{hdd_char_name}:\\").ToString("X");
         [NotNull] public override string ToString() => GetLicenseInformation();
 
+        public static readonly Regex HDDidRegex = new Regex(@"[0-9a-hA-h]*", RegexOptions.Compiled);
+
     }
 
     public static class LicenseExtensions
@@ -107,7 +110,14 @@ namespace SessionLicenseControl.Licenses
         /// <param name="FilePath">path where file will be save</param>
         /// <param name="secret">secret row to cover license</param>
         /// <returns>path where file was saved</returns>
-        public static string SaveToFile([NotNull] this License lic, string FilePath, string secret) => lic.SaveToFileAsync(FilePath, secret).Result;
+        public static string SaveToFile(
+            [NotNull] this License lic,
+            string FilePath,
+            string secret) =>
+            lic.SaveToZipFile(
+                FilePath,
+                $"{License.LicenseDirectory}\\{License.LicenseFileName}",
+                secret);
 
         /// <summary>
         /// Save data to the file
@@ -132,7 +142,32 @@ namespace SessionLicenseControl.Licenses
         /// <param name="file">file with license</param>
         /// <param name="secret">secret row for discover license</param>
         public static void LoadFromFile([NotNull] this License license, [NotNull] FileInfo file, [NotNull] string secret)
-            => license.LoadFromFileAsync(file, secret).Wait();
+        {
+            try
+            {
+                if (!file.Exists)
+                    throw new FileNotFoundException(file.FullName, "License file not found");
+
+                //if (secret is null)
+                //    throw new ArgumentNullException(nameof(secret), "Secret row can't be null");
+
+                var lic = file.GetFromZip<License>(License.LicenseFileName, secret);
+                if (lic is null)
+                    throw new LicenseExceptions("License not fount", nameof(LoadFromFileAsync));
+                license.HDDid = lic.HDDid;
+                license.ExpirationDate = lic.ExpirationDate;
+                license.CheckSessions = lic.CheckSessions;
+                license.IssuedFor = lic.IssuedFor;
+            }
+            catch (FormatException e)
+            {
+                throw new LicenseExceptions("Invalid format string", nameof(LoadFromFileAsync), e);
+            }
+            catch (CryptographicException e)
+            {
+                throw new LicenseExceptions("Invalid cover string", nameof(LoadFromFileAsync), e);
+            }
+        }
         /// <summary>
         /// Load data from the file
         /// </summary>
