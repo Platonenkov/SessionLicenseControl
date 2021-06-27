@@ -9,7 +9,7 @@ using MathCore.Annotations;
 
 namespace SessionLicenseControl.Extensions
 {
-    public static  class ZipFileExtensions
+    internal static  class ZipFileExtensions
     {
         /// <summary>
         /// Save data to the file
@@ -74,14 +74,14 @@ namespace SessionLicenseControl.Extensions
                 time_out_count++;
             }
 
-            await using var zip_stream = ArchiveFile.Open(FileMode.OpenOrCreate);
+            using var zip_stream = ArchiveFile.Open(FileMode.OpenOrCreate);
             using var archive = new ZipArchive(zip_stream, ZipArchiveMode.Update);
             var file = archive.Entries.FirstOrDefault(e => e.FullName == EntryFileName);
             file?.Delete();
 
             file = archive.CreateEntry(EntryFileName, CompressionLevel.Optimal);
 
-            await using StreamWriter writer = new StreamWriter(file.Open(), Encoding.UTF8);
+            using StreamWriter writer = new StreamWriter(file.Open(), Encoding.UTF8);
 
             await writer.WriteAsync(data);
         }
@@ -133,7 +133,7 @@ namespace SessionLicenseControl.Extensions
             var sessions = new List<T>();
 
             // open zip
-            await using var zip_stream = ArchiveFile.OpenRead();
+            using var zip_stream = ArchiveFile.OpenRead();
 
             using var archive = new ZipArchive(zip_stream, ZipArchiveMode.Read);
 
@@ -185,7 +185,7 @@ namespace SessionLicenseControl.Extensions
         public static async Task<T> GetFromZipAsync<T>(this FileInfo ArchiveFile, string EntryName, string Secret)
         {
             // open zip
-            await using var zip_stream = ArchiveFile.OpenRead();
+            using var zip_stream = ArchiveFile.OpenRead();
 
             using var archive = new ZipArchive(zip_stream, ZipArchiveMode.Read);
             var file = archive.Entries.FirstOrDefault(e => e.Name == EntryName);

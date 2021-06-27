@@ -158,7 +158,7 @@ namespace SessionLicenseControl.WPF.Styles
                 content.IsEnabled = false;
                 var panel = new GroupBox
                 {
-                    Header = "Введите данные лицензии",
+                    Header = "Input license row",
                     Width = 300,
                     Height = 200,
                     Padding = new Thickness(5),
@@ -179,7 +179,13 @@ namespace SessionLicenseControl.WPF.Styles
                 fields.Children.Add(new StackPanel().Init(p => DockPanel.SetDock(p, Dock.Top))
                     .Init(p => p.Children.Add(new TextBlock { Text = "ID:" }))
                     .Init(p => p.Children.Add(new TextBox { IsReadOnly = true, Text = License.GetThisPcHddSerialNumber()})));
-                fields.Children.Add(new Button { Content = "Ввод", Margin = new Thickness(left: 0, top: 5, right: 0, bottom: 5), Padding = new Thickness(top: 15, bottom: 15, left: 0, right: 0), Command = new LamdaCommand(o => l_checker((string)o), o => !string.IsNullOrWhiteSpace(o as string)) }.Init(b => DockPanel.SetDock(b, Dock.Bottom))
+                fields.Children.Add(
+                    new Button
+                        {
+                            Content = "Enter", Margin = new Thickness(left: 0, top: 5, right: 0, bottom: 5),
+                            Padding = new Thickness(top: 15, bottom: 15, left: 0, right: 0),
+                            Command = new LamdaCommand(o => l_checker((string) o), o => !string.IsNullOrWhiteSpace(o as string))
+                        }.Init(b => DockPanel.SetDock(b, Dock.Bottom))
                     .Init(b => b.SetBinding(ButtonBase.CommandParameterProperty, new Binding("Text") { Source = license_text })));
                 fields.Children.Add(license_text);
             }

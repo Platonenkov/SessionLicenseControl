@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SessionLicenseControl\SessionLicenseControl.csproj" />
+    <ProjectReference Include="..\..\SessionLicenseControl.WPF\SessionLicenseControl.WPF.csproj" />
   </ItemGroup>
 
 </Project>

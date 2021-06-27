@@ -74,7 +74,7 @@ namespace SessionLicenseControl.Sessions
 
         private void SetCurrentDay()
         {
-            if (Sessions.Count > 0 && Sessions[^1] is { } day && day.Date.Date == DateTime.Now.Date)
+            if (Sessions.Count > 0 && Sessions.Last() is { } day && day.Date.Date == DateTime.Now.Date)
             {
                 CurrentDay = day;
             }

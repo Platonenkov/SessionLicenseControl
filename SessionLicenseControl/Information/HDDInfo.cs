@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SessionLicenseControl.Information
 {
-    public static class HDDInfo
+    internal static class HDDInfo
     {
         [Flags]
         public enum FileSystemFeature : uint
@@ -105,13 +105,6 @@ namespace SessionLicenseControl.Information
                 sys_name, MAX_SIZE
             );
             return vol_serial;
-        }
-
-        public static void Test()
-        {
-            var drive = new DriveInfo("c:\\");
-            var sn = drive.GetSerialNumber();
-            Console.WriteLine(sn);
         }
     }
 }

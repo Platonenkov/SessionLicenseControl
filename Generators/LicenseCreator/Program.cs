@@ -122,7 +122,7 @@ namespace LicenseCreator
 
             #region Result message
 
-            license.ToString().ConsoleRed();
+            license.GetLicense().ToString().ConsoleRed();
 
             #endregion
 
