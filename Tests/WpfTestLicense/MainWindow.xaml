@@ -7,7 +7,7 @@
         xmlns:styles="clr-namespace:SessionLicenseControl.WPF.Styles;assembly=SessionLicenseControl.WPF"
         xmlns:fa5="http://schemas.fontawesome.com/icons/"
         mc:Ignorable="d"
-        Title="{Binding DataContext.LicenseInfo, Mode=OneWay,UpdateSourceTrigger=PropertyChanged, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Height="450" Width="800">
+        Height="450" Width="800">
     <Window.DataContext>
         <local:MainViewModel/>
     </Window.DataContext>

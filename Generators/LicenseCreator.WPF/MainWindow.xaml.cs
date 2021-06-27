@@ -1,9 +1,6 @@
-﻿using System;
-using System.Windows;
-using SessionLicenseControl;
-using SessionLicenseControl.WPF.Styles;
+﻿using System.Windows;
 
-namespace WpfTestLicense
+namespace LicenseCreator.WPF
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

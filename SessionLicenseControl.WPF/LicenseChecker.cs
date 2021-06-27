@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Threading.Tasks;
+using MathCore.Annotations;
+using SessionLicenseControl.WPF.Styles;
 
 namespace SessionLicenseControl.WPF
 {
-    public sealed class StatusChecker
+    public sealed class LicenseChecker
     {
         private readonly string _Str;
         private static Expression<Func<string, string>> __CheckStatusExpression = s => s;
@@ -23,19 +22,30 @@ namespace SessionLicenseControl.WPF
                 __CheckStatusFunction = __CheckStatusExpression.Compile();
             }
         }
+        public static Action OnLicenseLoaded;
+        private static SessionLicenseController __LicenseController;
+        public static SessionLicenseController LicenseController
+        {
+            get => __LicenseController;
+            set
+            {
+                __LicenseController = value;
+                OnLicenseLoaded?.Invoke();
+            }
+        }
 
-        public StatusChecker(string str) => _Str = str;
+        private LicenseChecker(string str) => _Str = str;
 
         public override string ToString() => __CheckStatusFunction(_Str);
 
-        public static implicit operator StatusChecker(string str) => new(str);
+        public static implicit operator LicenseChecker(string str) => new(str);
 
-        public static implicit operator string(StatusChecker status) => status.ToString();
+        public static implicit operator string(LicenseChecker status) => status.ToString();
         /// <summary>Проверить статус модели</summary>
         /// <param name="Initialized">Проверка осуществляется в режиме инициализации модели?</param>
         /// <returns>Объект проверки статуса модели</returns>
-        [MathCore.Annotations.NotNull]
-        public static StatusChecker CheckStatus(bool? Initialized = null)
+        [NotNull]
+        private static LicenseChecker CheckStatus(bool? Initialized = null)
         {
             if (Initialized is null) return "Ready.";
             if (!Initialized.Value)
@@ -49,5 +59,16 @@ namespace SessionLicenseControl.WPF
             return "Initializing...";
         }
 
+        public static void CheckLicense(string FilePath, string Secret, bool NeedStartNewSession, [CanBeNull] string UserName)
+        {
+            ModernWindow.OnLicenseLoaded += () =>
+            {
+                LicenseController = ModernWindow.LicenseController;
+            };
+
+            Checker = status => ModernWindow.LoadStyle(status, "license.lic", "testwpf", true, "admin");
+            CheckStatus(Initialized: false); // Не удалять и не менять положение! Инициализация механизма проверки лицензии
+
+        }
     }
 }

@@ -1,27 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MathCore.ViewModels;
 using SessionLicenseControl.Interfaces;
 using SessionLicenseControl.WPF;
-using SessionLicenseControl.WPF.Styles;
 
 namespace WpfTestLicense
 {
     public class MainViewModel: ViewModel,ILicenseBase
     {
-        #region Status : string - Status
-
-        /// <summary>Status</summary>
-        private  string _Status;
-
-        /// <summary>Status</summary>
-        public  string Status { get => _Status; set => Set(ref _Status, value); }
-
-        #endregion
-
         #region HDDid : string - hdd
 
         /// <summary>hdd</summary>
@@ -73,16 +58,15 @@ namespace WpfTestLicense
         public MainViewModel()
         {
 
-            ModernWindow.OnLicenseLoaded += () =>
+            LicenseChecker.OnLicenseLoaded += () =>
             {
-                ExpirationDate = ModernWindow.LicenseController.License.ExpirationDate;
-                IssuedFor = ModernWindow.LicenseController.License.IssuedFor;
-                HDDid = ModernWindow.LicenseController.License.HDDid;
-                CheckSessions = ModernWindow.LicenseController.License.CheckSessions;
-                LicenseInfo = ModernWindow.LicenseController.License.GetLicenseInformation();
+                ExpirationDate = LicenseChecker.LicenseController.License.ExpirationDate;
+                IssuedFor = LicenseChecker.LicenseController.License.IssuedFor;
+                HDDid = LicenseChecker.LicenseController.License.HDDid;
+                CheckSessions = LicenseChecker.LicenseController.License.CheckSessions;
+                LicenseInfo = LicenseChecker.LicenseController.License.GetLicenseInformation();
             };
-            SessionLicenseControl.WPF.StatusChecker.Checker = status => ModernWindow.LoadStyle(status,"license.lic","testwpf",true,"admin");
-            Status = SessionLicenseControl.WPF.StatusChecker.CheckStatus(Initialized: false); // Не удалять и не менять положение! Инициализация механизма проверки лицензии
+            LicenseChecker.CheckLicense("license.lic", "testwpf", true, "admin");
         }
     }
 }

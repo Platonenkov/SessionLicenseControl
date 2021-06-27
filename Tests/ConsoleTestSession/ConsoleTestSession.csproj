@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SessionLicenseControl\SessionLicenseControl.csproj" />
+    <ProjectReference Include="..\..\SessionLicenseControl\SessionLicenseControl.csproj" />
   </ItemGroup>
 
 </Project>

@@ -17,7 +17,7 @@ using SessionLicenseControl.WPF.Extensions;
 
 namespace SessionLicenseControl.WPF.Styles
 {
-    public partial class ModernWindow
+    internal partial class ModernWindow
     {
         private void OnSizeSouth(object sender, MouseButtonEventArgs e) => OnSize(sender, SizingAction.South);
         private void OnSizeNorth(object sender, MouseButtonEventArgs e) => OnSize(sender, SizingAction.North);
@@ -80,11 +80,6 @@ namespace SessionLicenseControl.WPF.Styles
         }
 
         #region P/Invoke
-
-        //private const int WM_SYSCOMMAND = 0x112;
-        //private const int WM_LBUTTONUP = 0x202;
-        //private const int SC_SIZE = 0xF000;
-        //private const int SC_KEYMENU = 0xF100;
 
         private void DragSize(IntPtr handle, SizingAction SizingAction)
         {
