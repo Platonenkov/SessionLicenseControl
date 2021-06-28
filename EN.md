@@ -1,4 +1,5 @@
 # SessionLicenseControl
+### [RU](https://github.com/Platonenkov/SessionLicenseControl/blob/dev/README.md)
 
 The project is designed to take into account sessions, and control licenses in the software
 At startup, the data is read from the encrypted archive and checked according to the requirements.
