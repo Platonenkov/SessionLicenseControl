@@ -1,4 +1,5 @@
 # SessionLicenseControl
+### [ENG](https://github.com/Platonenkov/SessionLicenseControl/blob/master/EN.md)
 
 Проект предназначен для учёта сессий, и контроля лицензии в ПО
 При запуске считываются данные из зашифрованного архива и проверяются в зависимости от требований.
@@ -20,12 +21,12 @@
 ```
 где:
 
-* `Secret` - secret string to encrypt data
-* `hdd` - HDD id of PC where file will use
-* `expirationDate` - Date when license will expire
-* `Ouner` - for whom the license is created
-* `check_sessions` - enable session control in licenses
-* `LicenseFilePath` - path, where license file will saved
+* `Secret` - Секретная последовательность для шифрования данных
+* `hdd` - Идентификатор жесткого диска компьютера, на котором будет использоваться файл
+* `expirationDate` - Дата истечения срока действия лицензии
+* `Ouner` - Для кого создана лицензия
+* `check_sessions` - Включить управление сеансами в лицензиях
+* `LicenseFilePath` - Путь, в котором будет сохранен файл лицензии
 
 `Вы можете использовать "LicenseCreator" для создания лицензии через консоль`
 
