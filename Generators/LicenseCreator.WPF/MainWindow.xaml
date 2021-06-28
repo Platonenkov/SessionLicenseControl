@@ -50,7 +50,7 @@
             </GroupBox.Header>
             <DatePicker SelectedDate="{Binding ExpirationDate, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding SelectedDateChecked}"/>
         </GroupBox>
-        <CheckBox  Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" IsChecked="{Binding CheckSessions}">
+        <CheckBox Margin="8,3" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" IsChecked="{Binding CheckSessions}">
             <StackPanel Orientation="Horizontal">
                 <fa5:ImageAwesome Height="10" Icon="Solid_Calendar"/>
                 <TextBlock Text=" Sessions"/>
