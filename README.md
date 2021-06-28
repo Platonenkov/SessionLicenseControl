@@ -1,5 +1,5 @@
 # SessionLicenseControl
-### [ENG](https://github.com/Platonenkov/SessionLicenseControl/blob/master/EN.md)
+### [ENG](https://github.com/Platonenkov/SessionLicenseControl/blob/dev/EN.md)
 
 Проект предназначен для учёта сессий, и контроля лицензии в ПО
 При запуске считываются данные из зашифрованного архива и проверяются в зависимости от требований.
