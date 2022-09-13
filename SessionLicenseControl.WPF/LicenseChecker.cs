@@ -66,7 +66,7 @@ namespace SessionLicenseControl.WPF
                 LicenseController = ModernWindow.LicenseController;
             };
 
-            Checker = status => ModernWindow.LoadStyle(status, "license.lic", "testwpf", true, "admin");
+            Checker = status => ModernWindow.LoadStyle(status, FilePath, Secret, NeedStartNewSession, UserName);
             CheckStatus(Initialized: false); // Не удалять и не менять положение! Инициализация механизма проверки лицензии
 
         }
