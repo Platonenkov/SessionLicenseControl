@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -10,10 +11,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 using MathCore.Annotations;
-using SessionLicenseControl.Licenses;
 using SessionLicenseControl.WPF.Commands;
 using SessionLicenseControl.WPF.Enums;
 using SessionLicenseControl.WPF.Extensions;
+using License = SessionLicenseControl.Licenses.License;
 
 namespace SessionLicenseControl.WPF.Styles
 {
@@ -83,8 +84,8 @@ namespace SessionLicenseControl.WPF.Styles
 
         private void DragSize(IntPtr handle, SizingAction SizingAction)
         {
-            var _ = User32.SendMessage(handle, WM.SYSCOMMAND, (IntPtr)((int)SC.SIZE + SizingAction), IntPtr.Zero);
-            _ = User32.SendMessage(handle, WM.LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
+            var _ = handle.SendMessage(WM.SYSCOMMAND, (IntPtr)((int)SC.SIZE + SizingAction), IntPtr.Zero);
+            _ = handle.SendMessage(WM.LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
         }
 
         #endregion
@@ -126,6 +127,8 @@ namespace SessionLicenseControl.WPF.Styles
                 if (File.Exists(FilePath))
                 {
                     LicenseController = new SessionLicenseController(FilePath, Secret, NeedStartNewSession, UserName);
+                    if (!LicenseController.ValidateLicense())
+                        throw new LicenseException(typeof(License),LicenseController,$"Wrong license data: Expiration date - {LicenseController?.License?.ExpirationDate}, HDD - {LicenseController?.License?.HDDid}");
                     return Status;
                 }
             }
@@ -161,8 +164,10 @@ namespace SessionLicenseControl.WPF.Styles
                     Header = "Input license row",
                     Width = 300,
                     Height = 200,
-                    Padding = new Thickness(5),
-                    Margin = new Thickness(5)
+                    //Padding = new Thickness(5),
+                    //Margin = new Thickness(5),
+                    Style = Application.Current.FindResource("MaterialDesignCardGroupBox") as Style
+
                 };
                 grid.Children.Add(new Border
                 {
@@ -171,22 +176,51 @@ namespace SessionLicenseControl.WPF.Styles
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     Effect = new DropShadowEffect(),
-                    Background = Brushes.WhiteSmoke
+                    Background = Application.Current.FindResource("MaterialDesignPaper") as Brush
                 });
                 var fields = new DockPanel();
                 panel.Content = fields;
-                var license_text = new TextBox { Margin = new Thickness(left: 0, top: 5, right: 0, bottom: 5), TextWrapping = TextWrapping.Wrap };
-                fields.Children.Add(new StackPanel().Init(p => DockPanel.SetDock(p, Dock.Top))
-                    .Init(p => p.Children.Add(new TextBlock { Text = "ID:" }))
-                    .Init(p => p.Children.Add(new TextBox { IsReadOnly = true, Text = License.GetThisPcHddSerialNumber()})));
-                fields.Children.Add(
-                    new Button
+                var license_text = new TextBox
+                {
+                    Margin = new Thickness(left: 0, top: 5, right: 0, bottom: 5),
+                    TextWrapping = TextWrapping.Wrap,
+                    Style = Application.Current.FindResource("MaterialDesignFilledTextBox") as Style,
+                    VerticalAlignment = VerticalAlignment.Bottom
+                };
+                fields.Children.Add(ObjectEx.Init(
+                    ObjectEx.Init(
+                        ObjectEx.Init(
+                            new StackPanel(),
+                            p => DockPanel.SetDock(p, Dock.Top)),
+                        p => p.Children.Add(new TextBlock
                         {
-                            Content = "Enter", Margin = new Thickness(left: 0, top: 5, right: 0, bottom: 5),
-                            Padding = new Thickness(top: 15, bottom: 15, left: 0, right: 0),
-                            Command = new LamdaCommand(o => l_checker((string) o), o => !string.IsNullOrWhiteSpace(o as string))
-                        }.Init(b => DockPanel.SetDock(b, Dock.Bottom))
-                    .Init(b => b.SetBinding(ButtonBase.CommandParameterProperty, new Binding("Text") { Source = license_text })));
+                            Text = "ID:",
+                            Style = Application.Current.FindResource("MaterialDesignTextBlock") as Style
+                        })),
+                    p => p.Children.Add(
+                        new TextBox
+                        {
+                            IsReadOnly = true,
+                            Text = SessionLicenseControl.Licenses.License.GetThisPcHddSerialNumber(),
+                            Style = Application.Current.FindResource("MaterialDesignTextBox") as Style,
+                        })));
+                fields.Children.Add(
+                    ObjectEx.Init(
+                            ObjectEx.Init(
+                                new Button
+                                {
+                                    Style = Application.Current.FindResource("MaterialDesignPaperButton") as Style,
+                                    Content = /*new PackIcon(){Kind = PackIconKind.PresenceEnter, Width = 20,Height = 20},*/
+                                    new TextBlock()
+                                    {
+                                        Text = "Enter",
+                                        Foreground = new SolidColorBrush(Colors.DarkGoldenrod),
+                                        Style = Application.Current.FindResource("MaterialDesignTextBlock") as Style
+                                    },
+                                    Margin = new Thickness(left: 0, top: 5, right: 0, bottom: 5),
+                                    //Padding = new Thickness(top: 15, bottom: 15, left: 0, right: 0),
+                                    Command = new LamdaCommand(o => l_checker((string)o), o => !string.IsNullOrWhiteSpace(o as string))
+                                }, b => DockPanel.SetDock(b, Dock.Bottom)), b => b.SetBinding(ButtonBase.CommandParameterProperty, new Binding("Text") { Source = license_text })));
                 fields.Children.Add(license_text);
             }
 
@@ -196,6 +230,8 @@ namespace SessionLicenseControl.WPF.Styles
                 try
                 {
                     LicenseController = new SessionLicenseController(s, Secret, FilePath, NeedStartNewSession, UserName);
+                    if (!LicenseController.ValidateLicense())
+                        throw new LicenseException(typeof(License), LicenseController, $"Wrong license data: Expiration date - {LicenseController?.License?.ExpirationDate}, HDD - {LicenseController?.License?.HDDid}");
                 }
                 catch
                 {

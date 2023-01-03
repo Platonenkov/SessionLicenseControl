@@ -7,9 +7,11 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FontAwesome5" Version="2.1.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\SessionLicenseControl.WPF\SessionLicenseControl.WPF.csproj" />
+    <ProjectReference Include="..\..\WPF\SessionLicenseControl.WPF\SessionLicenseControl.WPF.csproj" />
   </ItemGroup>
 
 </Project>

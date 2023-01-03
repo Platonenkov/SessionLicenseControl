@@ -1,14 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net7.0;net6.0;net5.0;netcoreapp3.1;netstandard2.1;net4.6.1-windows;net4.7-windows;net4.8-windows</TargetFrameworks>
-    <Version>1.0.1.0</Version>
+    <TargetFrameworks>net7.0-windows;net6.0-windows;net5.0-windows;net4.6.1-windows;net4.7-windows;net4.8-windows</TargetFrameworks>
+    <UseWPF>true</UseWPF>
+    <Version>1.0.1.1</Version>
     <LangVersion>latest</LangVersion>
     <Copyright>https://github.com/Platonenkov</Copyright>
     <Authors>Platonenkov</Authors>
     <Company>Platonenkov</Company>
     <Product>SessionLicenseControl</Product>
-    <Description>to create and controll license file or view sessions</Description>
+    <Description>to create and controll license file or view sessions in wpf</Description>
     <PackageLicenseFile>README.md</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/Platonenkov/SessionLicenseControl</PackageProjectUrl>
     <PackageIcon>icon.png</PackageIcon>
@@ -20,19 +21,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MathCore" Version="0.0.86" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
-    <PackageReference Include="System.IO.Compression" Version="4.3.0" />
-    <PackageReference Include="System.Runtime" Version="4.3.1" />
-    <PackageReference Include="System.Text.Json" Version="7.0.1" />
+    <ProjectReference Include="..\..\SessionLicenseControl\SessionLicenseControl.csproj" />
   </ItemGroup>
-
   <ItemGroup>
-    <None Include="..\README.md">
+    <None Include="..\..\README.md">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-    <None Include="..\Resources\icon.png">
+    <None Include="..\..\Resources\icon.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>

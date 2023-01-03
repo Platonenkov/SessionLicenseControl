@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net7.0-windows;net6.0-windows;net5.0-windows;net4.6.1-windows;net4.7-windows;net4.8-windows</TargetFrameworks>
     <UseWPF>true</UseWPF>
-    <Version>1.0.1.0</Version>
+    <Version>1.0.1.1</Version>
     <LangVersion>latest</LangVersion>
     <Copyright>https://github.com/Platonenkov</Copyright>
     <Authors>Platonenkov</Authors>
@@ -21,14 +21,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SessionLicenseControl\SessionLicenseControl.csproj" />
+    <ProjectReference Include="..\..\SessionLicenseControl\SessionLicenseControl.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\README.md">
+    <None Include="..\..\README.md">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-    <None Include="..\Resources\icon.png">
+    <None Include="..\..\Resources\icon.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>

@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SessionLicenseControl.WPF\SessionLicenseControl.WPF.csproj" />
+    <ProjectReference Include="..\..\WPF\SessionLicenseControl.WPF\SessionLicenseControl.WPF.csproj" />
   </ItemGroup>
 
   <ItemGroup>

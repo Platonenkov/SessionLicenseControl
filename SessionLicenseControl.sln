@@ -1,15 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31410.357
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SessionLicenseControl", "SessionLicenseControl\SessionLicenseControl.csproj", "{B78F1CC4-9C9E-42A1-9AF6-7D99DF146615}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{648898CD-3B25-4875-A880-B68CD3504056}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Generators", "Generators", "{F24578EF-AD7C-4304-9AFE-FE50A4EE943D}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SessionLicenseControl.WPF", "SessionLicenseControl.WPF\SessionLicenseControl.WPF.csproj", "{31130A19-20E5-4DCE-B10C-B0218D44768C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleTestSession", "Tests\ConsoleTestSession\ConsoleTestSession.csproj", "{9B975569-3C03-48E9-A8E0-F3DCACCE368B}"
 EndProject
@@ -19,7 +17,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LicenseCreator", "Generator
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LicenseCreator.WPF", "Generators\LicenseCreator.WPF\LicenseCreator.WPF.csproj", "{0CD4D598-B161-469C-8885-608FD830129B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RowDecryptor", "RowDecryptor\RowDecryptor.csproj", "{BED01539-E17C-4788-9135-313F1914502F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RowDecryptor", "RowDecryptor\RowDecryptor.csproj", "{BED01539-E17C-4788-9135-313F1914502F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WPF", "WPF", "{4CF4BF8A-1FB4-4B6E-8076-2B9524C4D995}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SessionLicenseControl.WPF", "WPF\SessionLicenseControl.WPF\SessionLicenseControl.WPF.csproj", "{F88C70B8-BCE0-4A56-8DFB-AC6116919064}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SessionLicenseControl.MaterialDesign.WPF", "WPF\SessionLicenseControl.MaterialDesign.WPF\SessionLicenseControl.MaterialDesign.WPF.csproj", "{5068101B-5213-4335-8015-EF203F003E6F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,10 +35,6 @@ Global
 		{B78F1CC4-9C9E-42A1-9AF6-7D99DF146615}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B78F1CC4-9C9E-42A1-9AF6-7D99DF146615}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B78F1CC4-9C9E-42A1-9AF6-7D99DF146615}.Release|Any CPU.Build.0 = Release|Any CPU
-		{31130A19-20E5-4DCE-B10C-B0218D44768C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{31130A19-20E5-4DCE-B10C-B0218D44768C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{31130A19-20E5-4DCE-B10C-B0218D44768C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{31130A19-20E5-4DCE-B10C-B0218D44768C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9B975569-3C03-48E9-A8E0-F3DCACCE368B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9B975569-3C03-48E9-A8E0-F3DCACCE368B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B975569-3C03-48E9-A8E0-F3DCACCE368B}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -55,6 +55,14 @@ Global
 		{BED01539-E17C-4788-9135-313F1914502F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BED01539-E17C-4788-9135-313F1914502F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BED01539-E17C-4788-9135-313F1914502F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F88C70B8-BCE0-4A56-8DFB-AC6116919064}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F88C70B8-BCE0-4A56-8DFB-AC6116919064}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F88C70B8-BCE0-4A56-8DFB-AC6116919064}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F88C70B8-BCE0-4A56-8DFB-AC6116919064}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5068101B-5213-4335-8015-EF203F003E6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5068101B-5213-4335-8015-EF203F003E6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5068101B-5213-4335-8015-EF203F003E6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5068101B-5213-4335-8015-EF203F003E6F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -64,6 +72,8 @@ Global
 		{0192A288-FD31-40DF-864D-1954EECDF160} = {648898CD-3B25-4875-A880-B68CD3504056}
 		{D94D23F0-382A-478B-8A56-B8E79E0EFE36} = {F24578EF-AD7C-4304-9AFE-FE50A4EE943D}
 		{0CD4D598-B161-469C-8885-608FD830129B} = {F24578EF-AD7C-4304-9AFE-FE50A4EE943D}
+		{F88C70B8-BCE0-4A56-8DFB-AC6116919064} = {4CF4BF8A-1FB4-4B6E-8076-2B9524C4D995}
+		{5068101B-5213-4335-8015-EF203F003E6F} = {4CF4BF8A-1FB4-4B6E-8076-2B9524C4D995}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2F0D2EF2-E49D-4F33-A39E-7D04793F906F}

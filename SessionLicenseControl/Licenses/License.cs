@@ -158,9 +158,6 @@ namespace SessionLicenseControl.Licenses
                 license.ExpirationDate = lic.ExpirationDate;
                 license.CheckSessions = lic.CheckSessions;
                 license.IssuedFor = lic.IssuedFor;
-
-                if (lic.ExpirationDate is { } date && date < DateTime.Now)
-                    throw new LicenseExceptions("License is expired", nameof(LoadFromFileAsync));
             }
             catch (FormatException e)
             {
