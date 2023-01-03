@@ -28,8 +28,10 @@ jobs:
       run: |
           dotnet build SessionLicenseControl/SessionLicenseControl.csproj -c Release
           dotnet pack SessionLicenseControl/SessionLicenseControl.csproj -c Release
-          dotnet build SessionLicenseControl.WPF/SessionLicenseControl.WPF.csproj -c Release          
-          dotnet pack SessionLicenseControl.WPF/SessionLicenseControl.WPF.csproj -c Release
+          dotnet build WPF/SessionLicenseControl.WPF/SessionLicenseControl.WPF.csproj -c Release          
+          dotnet pack WPF/SessionLicenseControl.WPF/SessionLicenseControl.WPF.csproj -c Release
+          dotnet build WPF/SessionLicenseControl.WPF/SessionLicenseControl.MaterialDesign.WPF.csproj -c Release          
+          dotnet pack WPF/SessionLicenseControl.WPF/SessionLicenseControl.MaterialDesign.WPF.csproj -c Release
           
     - name: Push package
       run: dotnet nuget push "**/*.nupkg" --skip-duplicate --source https://nuget.pkg.github.com/platonenkov/index.json -k ${{secrets.GITHUB_TOKEN}}     
