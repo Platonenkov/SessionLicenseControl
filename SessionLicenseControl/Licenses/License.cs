@@ -91,7 +91,7 @@ namespace SessionLicenseControl.Licenses
                 true when HDDid.IsNotNullOrWhiteSpace() => $"License for {IssuedFor}, HDD: {HDDid}, expires {ExpirationDate:dd.MM.yyyy HH:mm}",
                 false when HDDid.IsNullOrWhiteSpace() => $"License for {IssuedFor}, UNLIMITED license",
                 false => $"UNLIMITED license for {IssuedFor}, PC with HDD: {HDDid}",
-                _ => $"license expires {ExpirationDate:dd.MM.yyyy HH:mm} for {IssuedFor}, any PC"
+                _ => $"license expires {ExpirationDate:dd.MM.yyyy HH:mm:ss} for {IssuedFor}, any PC"
             };
         }
         public static string GetThisPcHddSerialNumber(char hdd_char_name = 'c') => HDDInfo.GetSerialNumber($"{hdd_char_name}:\\").ToString("X");
@@ -158,6 +158,9 @@ namespace SessionLicenseControl.Licenses
                 license.ExpirationDate = lic.ExpirationDate;
                 license.CheckSessions = lic.CheckSessions;
                 license.IssuedFor = lic.IssuedFor;
+
+                if (lic.ExpirationDate is { } date && date < DateTime.Now)
+                    throw new LicenseExceptions("License is expired", nameof(LoadFromFileAsync));
             }
             catch (FormatException e)
             {

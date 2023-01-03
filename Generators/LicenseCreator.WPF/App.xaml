@@ -2,8 +2,43 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:LicenseCreator.WPF"
+             xmlns:themes="clr-namespace:StyledWindow.WPF.Themes;assembly=StyledWindow.WPF"
+             xmlns:components="clr-namespace:StyledWindow.WPF.Components;assembly=StyledWindow.WPF"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <materialDesign:BundledTheme BaseTheme="Dark"
+                                             PrimaryColor="BlueGrey"
+                                             SecondaryColor="Teal"
+                                             ColorAdjustment="{materialDesign:ColorAdjustment}" />
+                <ResourceDictionary Source="pack://application:,,,/StyledWindow.WPF;component/Themes/Generic.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MathCore.WPF;component/themes/generic.xaml" />
+
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/materialdesigntheme.togglebutton.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/materialdesigntheme.popupbox.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <Style x:Key="LocStyledWindow"
+                   TargetType="Window"
+                   BasedOn="{StaticResource StyledWindow}">
+                <!--<Setter Property="Icon" Value="Resources/rocket.png"/>-->
+                <Setter Property="themes:StyledWindow.LanguageContent">
+                    <Setter.Value>
+                        <themes:KnownLanguages>
+                            <components:LanguageInfo CultureName="ru-RU"
+                                                     ShortName="Ru" />
+                            <components:LanguageInfo CultureName="en-US"
+                                                     ShortName="En" />
+                        </themes:KnownLanguages>
+
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+        </ResourceDictionary>
+
     </Application.Resources>
 </Application>
