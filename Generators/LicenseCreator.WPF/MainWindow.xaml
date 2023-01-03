@@ -5,83 +5,212 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LicenseCreator.WPF"
         xmlns:fa5="http://schemas.fontawesome.com/icons/"
+        xmlns:themes="clr-namespace:StyledWindow.WPF.Themes;assembly=StyledWindow.WPF"
+        xmlns:components="clr-namespace:StyledWindow.WPF.Components;assembly=StyledWindow.WPF"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="License generator" Height="260" MinHeight="260" Width="525" MinWidth="525">
+        Title="License generator"
+        Height="500"
+        MinHeight="260"
+        Width="525"
+        MinWidth="525"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
+    <Window.Style>
+        <Style TargetType="{x:Type local:MainWindow}"
+               BasedOn="{StaticResource LocStyledWindow}">
+            <Setter Property="themes:StyledWindow.LanguageContent">
+                <Setter.Value>
+                    <themes:KnownLanguages>
+                        <components:LanguageInfo CultureName="ru-RU"
+                                                 ShortName="Ru" />
+                        <components:LanguageInfo CultureName="en-US"
+                                                 ShortName="En" />
+                    </themes:KnownLanguages>
+
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Window.Style>
     <Window.DataContext>
-        <local:MainViewModel/>
+        <local:MainViewModel />
     </Window.DataContext>
-    <Grid Margin="3">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="1*"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="47"/>
-        </Grid.RowDefinitions>
-        <GroupBox Grid.Column="0" Grid.Row="0">
-            <GroupBox.Header>
-                <CheckBox IsChecked="{Binding HDDidChecked}">
+    <materialDesign:DialogHost DialogTheme="Inherit">
+        <Grid Margin="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="47" />
+            </Grid.RowDefinitions>
+            <GroupBox Grid.Column="0"
+                      Grid.Row="0">
+                <GroupBox.Header>
                     <StackPanel Orientation="Horizontal">
-                        <fa5:ImageAwesome Height="10" Icon="Solid_Hdd"/>
-                        <TextBlock Text=" HDD id"/>
+                        <ToggleButton Style="{StaticResource MaterialDesignSwitchDarkToggleButton}"
+                                      IsChecked="{Binding HDDidChecked}">
+                            <materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                                <SolidColorBrush Color="DarkBlue" />
+                            </materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                            <materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                                <SolidColorBrush Color="DarkRed" />
+                            </materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        </ToggleButton>
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="Hdd"
+                                                     Width="16"
+                                                     Height="16"
+                                                     Foreground="{DynamicResource MaterialDesignPaper}" />
+                            <TextBlock Text="HDD id"
+                                       Foreground="{DynamicResource MaterialDesignPaper}" />
+                        </StackPanel>
+
                     </StackPanel>
-                </CheckBox>
-            </GroupBox.Header>
-            <TextBox Text="{Binding HDDid, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding HDDidChecked}">
-                <TextBox.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="current HDD" Command="{Binding GetCurrentHDDid}"/>
-                    </ContextMenu>
-                </TextBox.ContextMenu>
+                </GroupBox.Header>
+                <TextBox Text="{Binding HDDid, UpdateSourceTrigger=PropertyChanged}"
+                         IsReadOnly="True" VerticalAlignment="Center">
+                </TextBox>
+            </GroupBox>
+            <GroupBox Grid.Column="1"
+                      Grid.Row="0">
+                <GroupBox.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <ToggleButton Style="{StaticResource MaterialDesignSwitchDarkToggleButton}"
+                                      IsChecked="{Binding SelectedDateChecked}">
+                            <materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                                <SolidColorBrush Color="DarkBlue" />
+                            </materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                            <materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                                <SolidColorBrush Color="DarkRed" />
+                            </materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        </ToggleButton>
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="Clock"
+                                                     Width="16"
+                                                     Height="16"
+                                                     Foreground="{DynamicResource MaterialDesignPaper}" />
+                            <TextBlock Text="{Loc Date_restriction}"
+                                       Foreground="{DynamicResource MaterialDesignPaper}" />
+                        </StackPanel>
+
+                    </StackPanel>
+                </GroupBox.Header>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding ExpirationDate, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                               VerticalAlignment="Center" />
+                    <Button Margin="8 0 0 0"
+                            Content="{materialDesign:PackIcon Clock, Size=35}"
+                            Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}"
+                            Style="{StaticResource MaterialDesignIconButton}"
+                            materialDesign:DialogHost.DialogOpenedAttached="CombinedDialogOpenedEventHandler"
+                            materialDesign:DialogHost.DialogClosingAttached="CombinedDialogClosingEventHandler">
+                        <Button.CommandParameter>
+                            <Grid Margin="-1">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <StackPanel Grid.Row="0"
+                                            Orientation="Horizontal">
+                                    <Calendar x:Name="CombinedCalendar"
+                                              Margin="-1 -4 -1 0" />
+                                    <materialDesign:Clock x:Name="CombinedClock"
+                                                          DisplayAutomation="CycleWithSeconds"
+                                                          Is24Hours="True" />
+                                </StackPanel>
+                                <StackPanel Grid.Row="1"
+                                            Margin="8"
+                                            HorizontalAlignment="Right"
+                                            Orientation="Horizontal">
+                                    <Button Style="{DynamicResource MaterialDesignFlatButton}"
+                                            Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                                            CommandParameter="0"
+                                            Content="CANCEL" />
+                                    <Button Style="{DynamicResource MaterialDesignFlatButton}"
+                                            Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                                            CommandParameter="1"
+                                            Content="OK" />
+                                </StackPanel>
+                            </Grid>
+                        </Button.CommandParameter>
+                    </Button>
+                </StackPanel>
+            </GroupBox>
+            <StackPanel Orientation="Horizontal"
+                        Margin="8,3"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Grid.Row="1">
+                <ToggleButton Style="{StaticResource MaterialDesignSwitchDarkToggleButton}"
+                              IsChecked="{Binding CheckSessions}">
+                    <materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                        <SolidColorBrush Color="ForestGreen" />
+                    </materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                    <materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        <SolidColorBrush Color="DarkRed" />
+                    </materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                </ToggleButton>
+                <StackPanel Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="Calendar"
+                                             Width="16"
+                                             Height="16"
+                                             Foreground="{DynamicResource MaterialDesignBody}" />
+                    <TextBlock Text="{Loc Checking_sessions}"
+                               Foreground="{DynamicResource MaterialDesignBody}" />
+                </StackPanel>
+
+            </StackPanel>
+
+            <TextBox Grid.Column="1"
+                     Grid.Row="1"
+                     Margin="0 5"
+                     Text="{Binding IssuedFor, UpdateSourceTrigger=PropertyChanged}"
+                     Style="{StaticResource MaterialDesignFilledTextBox}">
+                <materialDesign:HintAssist.Hint>
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="User"
+                                                 Width="16"
+                                                 Height="16" />
+                        <TextBlock Text="{Loc License_owner}" />
+                    </StackPanel>
+                </materialDesign:HintAssist.Hint>
             </TextBox>
-        </GroupBox>
-        <GroupBox Grid.Column="1" Grid.Row="0">
-            <GroupBox.Header>
-                <CheckBox IsChecked="{Binding SelectedDateChecked}">
-                    <StackPanel Orientation="Horizontal">
-                        <fa5:ImageAwesome Height="10" Icon="Solid_Clock"/>
-                        <TextBlock Text=" Time"/>
-                    </StackPanel>
-                </CheckBox>
-            </GroupBox.Header>
-            <DatePicker SelectedDate="{Binding ExpirationDate, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding SelectedDateChecked}"/>
-        </GroupBox>
-        <CheckBox Margin="8,3" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" IsChecked="{Binding CheckSessions}">
-            <StackPanel Orientation="Horizontal">
-                <fa5:ImageAwesome Height="10" Icon="Solid_Calendar"/>
-                <TextBlock Text=" Sessions"/>
-            </StackPanel>
-        </CheckBox>
-        <GroupBox Grid.Column="1" Grid.Row="1">
-            <GroupBox.Header>
+            <TextBox Text="{Binding Secret, UpdateSourceTrigger=PropertyChanged}"
+                     Style="{StaticResource MaterialDesignFilledTextBox}"
+                     materialDesign:HintAssist.Hint="{Loc Secret_row}"
+                     Margin="0 5"
+                     Grid.Column="0"
+                     Grid.Row="2"
+                     Grid.ColumnSpan="2" />
+            <GroupBox Grid.Column="0"
+                      Grid.ColumnSpan="2"
+                      Grid.Row="3"
+                      Header="{Loc License_text}">
+                <TextBox IsReadOnly="True"
+                         Text="{Binding LicenseText, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" TextWrapping="Wrap" />
+            </GroupBox>
+            <Button Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Grid.Row="4"
+                    Margin="0,5,0,5"
+                    Command="{Binding CreateLicenseCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <fa5:ImageAwesome Height="10" Icon="Solid_User"/>
-                    <TextBlock Text=" License owner"/>
+                    <materialDesign:PackIcon Kind="ContentSave"
+                                             Width="16"
+                                             Height="16"
+                                             Margin="0 0 5 0" />
+                    <TextBlock Text="{Loc Create_license_file}" />
                 </StackPanel>
-            </GroupBox.Header>
-            <TextBox Text="{Binding IssuedFor, UpdateSourceTrigger=PropertyChanged}"/>
-        </GroupBox>
-        <GroupBox Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2">
-            <GroupBox.Header>
-                <StackPanel Orientation="Horizontal">
-                    <fa5:ImageAwesome Height="10" Icon="Solid_UserSecret"/>
-                    <TextBlock Text=" Secret row"/>
-                </StackPanel>
-            </GroupBox.Header>
-            <TextBox Text="{Binding Secret, UpdateSourceTrigger=PropertyChanged}"/>
-        </GroupBox>
-        <GroupBox Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3" Header="Текст лицензии">
-            <TextBox IsReadOnly="True" Text="{Binding LicenseText, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"/>
-        </GroupBox>
-        <Button Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="4" Margin="0,5,0,5" Command="{Binding CreateLicenseCommand}">
-            <StackPanel Orientation="Horizontal">
-                <fa5:ImageAwesome Height="16" Icon="Solid_Save" Margin="0,0,5,0"/>
-                <TextBlock Text="Create license file"/>
-            </StackPanel>
-        </Button>
-    </Grid>
+            </Button>
+        </Grid>
+    </materialDesign:DialogHost>
 </Window>

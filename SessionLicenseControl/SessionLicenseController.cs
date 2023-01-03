@@ -125,7 +125,7 @@ namespace SessionLicenseControl
                 var file = new FileInfo(FilePath);
 
                 var license = new License(file, Secret);
-                license.LoadFromFile(file, Secret);
+                //license.LoadFromFile(file, Secret);
                 SessionController = new SessionsOperator(FilePath, NeedStartNewSession, UserName, Secret, license.CheckSessions);
                 License = license;
             }

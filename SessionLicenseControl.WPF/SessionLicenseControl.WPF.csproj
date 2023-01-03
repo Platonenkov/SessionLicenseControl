@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0-windows;net5.0-windows;net4.6.1-windows;net4.7-windows;net4.8-windows</TargetFrameworks>
+    <TargetFrameworks>net7.0-windows;net6.0-windows;net5.0-windows;net4.6.1-windows;net4.7-windows;net4.8-windows</TargetFrameworks>
     <UseWPF>true</UseWPF>
-    <Version>1.0.0.1</Version>
+    <Version>1.0.1.0</Version>
     <LangVersion>latest</LangVersion>
     <Copyright>https://github.com/Platonenkov</Copyright>
     <Authors>Platonenkov</Authors>
@@ -17,7 +17,7 @@
     <RepositoryUrl>https://github.com/Platonenkov/SessionLicenseControl</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
     <PackageTags>license session control block</PackageTags>
-    <PackageReleaseNotes>initialize first release</PackageReleaseNotes>
+    <PackageReleaseNotes>expiration bug fix, net 7 support</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
